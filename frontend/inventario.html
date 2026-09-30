@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inventario | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="#">Productos</a>
+            <a href="#">Reportes</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard">
+
+        <h1>Inventario</h1>
+        <p>Control de stock de productos</p>
+
+        <table class="inventory-table">
+
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Sucursal</th>
+            <th>Stock</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody id="tablaInventario">
+    </tbody>
+
+</table>
+
+    </main>
+    <script src="js/inventario.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Registrar venta | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="#">Productos</a>
+            <a href="#">Reportes</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard">
+
+        <h1>Registrar venta</h1>
+        <p>Ingrese los datos de la venta</p>
+
+        <form id="ventaForm" class="venta-form">
+
+            <label for="producto">Producto</label>
+            <select id="producto" required>
+                <option value="">Seleccione un producto</option>
+                <option value="Polera Oversize Negra">
+                    Polera Oversize Negra
+                </option>
+                <option value="Jeans Wide Leg">
+                    Jeans Wide Leg
+                </option>
+                <option value="Blusa Casual">
+                    Blusa Casual
+                </option>
+            </select>
+
+            <label for="talla">Talla</label>
+            <select id="talla" required>
+                <option value="">Seleccione una talla</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="2XL">2XL</option>
+                <option value="3XL">3XL</option>
+                <option value="4XL">4XL</option>
+            </select>
+
+            <label for="sucursal">Sucursal</label>
+            <select id="sucursal" required>
+                <option value="">Seleccione una sucursal</option>
+                <option value="Rancagua">Rancagua</option>
+                <option value="Bodega">Bodega</option>
+            </select>
+
+            <label for="cantidad">Cantidad</label>
+            <input
+                type="number"
+                id="cantidad"
+                min="1"
+                required
+            >
+
+            <button type="submit">
+                Registrar venta
+            </button>
+
+        </form>
+
+        <p id="mensajeVenta"></p>
+
+    </main>
+
+    <script src="js/ventas.js"></script>
+
+</body>
+</html>

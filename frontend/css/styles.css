@@ -1,0 +1,215 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-container {
+    background-color: white;
+
+    width: 380px;
+    padding: 40px;
+
+    border-radius: 12px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.login-container p {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+input {
+    padding: 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+button {
+    margin-top: 25px;
+
+    padding: 12px;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+/* DASHBOARD */
+
+.dashboard-body {
+    display: flex;
+    align-items: stretch;
+
+    background-color: #f5f5f5;
+}
+
+.sidebar {
+    width: 230px;
+    min-height: 100vh;
+
+    background-color: #ffffff;
+
+    padding: 30px 20px;
+
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar h2 {
+    margin-bottom: 40px;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #333;
+
+    padding: 12px;
+
+    margin-bottom: 8px;
+
+    border-radius: 6px;
+}
+
+.sidebar a:hover {
+    background-color: #eeeeee;
+}
+
+.dashboard {
+    flex: 1;
+
+    padding: 40px;
+}
+
+.dashboard > p {
+    margin-top: 5px;
+    margin-bottom: 30px;
+}
+
+.cards {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+.card {
+    background-color: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.card h3 {
+    font-size: 16px;
+
+    margin-bottom: 15px;
+}
+
+.card p {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+/* INVENTARIO */
+
+.inventory-table {
+    width: 100%;
+    margin-top: 30px;
+
+    border-collapse: collapse;
+
+    background-color: white;
+
+    border-radius: 10px;
+    overflow: hidden;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.inventory-table th,
+.inventory-table td {
+    padding: 16px;
+    text-align: left;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.inventory-table th {
+    background-color: #f1f1f1;
+}
+
+.inventory-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* REGISTRAR VENTA */
+
+.venta-form {
+    max-width: 500px;
+
+    margin-top: 30px;
+
+    background-color: white;
+
+    padding: 30px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.venta-form select,
+.venta-form input {
+    padding: 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 6px;
+
+    margin-bottom: 10px;
+}
+
+#mensajeVenta {
+    margin-top: 20px;
+    font-weight: bold;
+}
