@@ -210,6 +210,49 @@ app.post('/api/ventas', async (req, res) => {
 
 });
 
+app.get('/api/opciones-venta', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                p.nombre AS producto,
+                v.color,
+                v.talla,
+                s.nombre AS sucursal,
+                i.stock_actual
+            FROM inventario i
+            JOIN variantes v
+                ON i.id_variante = v.id_variante
+            JOIN productos p
+                ON v.id_producto = p.id_producto
+            JOIN sucursales s
+                ON i.id_sucursal = s.id_sucursal
+            WHERE
+                p.activo = TRUE
+                AND s.activo = TRUE
+                AND i.stock_actual > 0
+            ORDER BY
+                p.nombre,
+                v.color,
+                v.talla,
+                s.nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al cargar las opciones de venta'
+        });
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {

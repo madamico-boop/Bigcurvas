@@ -32,45 +32,27 @@
 
             <label for="producto">Producto</label>
             <select id="producto" required>
-    <option value="">Seleccione un producto</option>
+                <option value="">Seleccione un producto</option>
+            </select>
 
-    <option value="Polera Oversize">
-        Polera Oversize
-    </option>
-
-    <option value="Palazo Jeans">
-        Palazo Jeans
-    </option>
-
-    <option value="Blusa Casual">
-        Blusa Casual
-    </option>
-</select>
-            
             <label for="color">Color</label>
-            <select id="color" required>
+            <select id="color" required disabled>
                 <option value="">Seleccione un color</option>
-                <option value="Negro">Negro</option>
-                <option value="Rosado">Rosado</option>
-                <option value="Celeste">Celeste</option>
             </select>
 
             <label for="talla">Talla</label>
-            <select id="talla" required>
+            <select id="talla" required disabled>
                 <option value="">Seleccione una talla</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
-                <option value="4XL">4XL</option>
             </select>
 
             <label for="sucursal">Sucursal</label>
-            <select id="sucursal" required>
+            <select id="sucursal" required disabled>
                 <option value="">Seleccione una sucursal</option>
-                <option value="Rancagua">Rancagua</option>
-                <option value="Bodega">Bodega</option>
             </select>
+
+            <p id="stockDisponible">
+                Stock disponible: -
+            </p>
 
             <label for="cantidad">Cantidad</label>
             <input

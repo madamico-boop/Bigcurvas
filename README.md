@@ -2,35 +2,47 @@
 
 Sistema web para la gestión de inventario y ventas de Bigcurvas.
 
-## Tecnologías
+Actualmente el proyecto permite consultar inventario, trabajar con variantes por talla y color, manejar stock separado entre Rancagua y Bodega y registrar ventas descontando stock automáticamente.
 
+---
+
+## Tecnologías utilizadas
+
+### Frontend
 - HTML5
 - CSS3
 - JavaScript
+
+### Backend
 - Node.js
 - Express.js
+
+### Base de datos
 - PostgreSQL
+
+### Otras herramientas
+- Git
+- GitHub
 - Chart.js
+- Postman
+- Visual Studio Code
 
-## Funcionalidades actuales
+---
 
-- Login básico
-- Dashboard
-- Visualización de inventario
-- Registro de ventas
-- Validación de stock
-- Descuento automático de stock
+## Requisitos
 
-## Ejecutar el proyecto
+Antes de ejecutar el proyecto se recomienda tener instalado:
 
-Instalar dependencias:
+- Visual Studio Code
+- Node.js
+- Git
+- PostgreSQL
+- pgAdmin 4
 
-npm install
+Se puede comprobar con:
 
-Ejecutar servidor:
-
-node backend/server.js
-
-Abrir en el navegador:
-
-http://localhost:3000
+```powershell
+node -v
+npm -v
+git --version
+psql --version
