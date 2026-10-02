@@ -1,5 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const pool = require('./config/db');
 
 const app = express();
 
@@ -51,9 +53,40 @@ app.get('/', (req, res) => {
 
 
 // Ruta para obtener el inventario
-app.get('/api/inventario', (req, res) => {
+app.get('/api/inventario', async (req, res) => {
 
-    res.json(inventario);
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                i.id_inventario,
+                p.nombre AS producto,
+                v.color,
+                v.talla,
+                s.nombre AS sucursal,
+                i.stock_actual,
+                i.stock_minimo
+            FROM inventario i
+            JOIN variantes v
+                ON i.id_variante = v.id_variante
+            JOIN productos p
+                ON v.id_producto = p.id_producto
+            JOIN sucursales s
+                ON i.id_sucursal = s.id_sucursal
+            ORDER BY p.nombre, v.color, v.talla, s.nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener el inventario'
+        });
+
+    }
 
 });
 
@@ -96,6 +129,30 @@ app.post('/api/ventas', (req, res) => {
 
 });
 
+app.get('/api/prueba-db', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(
+            'SELECT NOW() AS fecha'
+        );
+
+        res.json({
+            mensaje: 'Conexión con PostgreSQL correcta',
+            fecha: resultado.rows[0].fecha
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al conectar con PostgreSQL'
+        });
+
+    }
+
+});
 
 // Inicia el servidor
 app.listen(PORT, () => {
