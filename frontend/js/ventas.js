@@ -7,6 +7,7 @@ formulario.addEventListener('submit', async (event) => {
 
     const venta = {
         producto: document.getElementById('producto').value,
+        color: document.getElementById('color').value,
         talla: document.getElementById('talla').value,
         sucursal: document.getElementById('sucursal').value,
         cantidad: Number(
