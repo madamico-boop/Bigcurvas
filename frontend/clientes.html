@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clientes | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="productos.html">Productos</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="#">Reportes</a>
+        </nav>
+
+    </aside>
+
+
+    <main class="dashboard">
+
+        <h1>Clientes</h1>
+        <p>Registro y administración de clientes</p>
+
+
+        <!-- AGREGAR CLIENTE -->
+
+        <section class="productos-grid">
+
+            <div class="producto-form-container">
+
+                <h2>Agregar cliente</h2>
+
+                <form id="clienteForm" class="venta-form">
+
+                    <label for="nombreCliente">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nombreCliente"
+                        required
+                    >
+
+
+                    <label for="rutCliente">
+                        RUT
+                    </label>
+
+                    <input
+                        type="text"
+                        id="rutCliente"
+                        placeholder="Ej: 12.345.678-9"
+                    >
+
+
+                    <label for="telefonoCliente">
+                        Teléfono
+                    </label>
+
+                    <input
+                        type="text"
+                        id="telefonoCliente"
+                    >
+
+
+                    <label for="correoCliente">
+                        Correo
+                    </label>
+
+                    <input
+                        type="email"
+                        id="correoCliente"
+                    >
+
+
+                    <label for="direccionCliente">
+                        Dirección
+                    </label>
+
+                    <input
+                        type="text"
+                        id="direccionCliente"
+                    >
+
+
+                    <label for="comunaCliente">
+                        Comuna
+                    </label>
+
+                    <input
+                        type="text"
+                        id="comunaCliente"
+                    >
+
+
+                    <button type="submit">
+                        Agregar cliente
+                    </button>
+
+                </form>
+
+                <p id="mensajeCliente"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- EDITAR CLIENTE -->
+
+        <section
+            id="editarClienteSection"
+            class="productos-grid"
+            hidden
+        >
+
+            <div class="producto-form-container">
+
+                <h2>Editar cliente</h2>
+
+                <form id="editarClienteForm" class="venta-form">
+
+                    <label for="editarNombreCliente">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarNombreCliente"
+                        required
+                    >
+
+
+                    <label for="editarRutCliente">
+                        RUT
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarRutCliente"
+                    >
+
+
+                    <label for="editarTelefonoCliente">
+                        Teléfono
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarTelefonoCliente"
+                    >
+
+
+                    <label for="editarCorreoCliente">
+                        Correo
+                    </label>
+
+                    <input
+                        type="email"
+                        id="editarCorreoCliente"
+                    >
+
+
+                    <label for="editarDireccionCliente">
+                        Dirección
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarDireccionCliente"
+                    >
+
+
+                    <label for="editarComunaCliente">
+                        Comuna
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarComunaCliente"
+                    >
+
+
+                    <button type="submit">
+                        Guardar cambios
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelarCliente"
+                    >
+                        Cancelar
+                    </button>
+
+                </form>
+
+                <p id="mensajeEdicionCliente"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- TABLA -->
+
+        <h2 class="titulo-tabla">
+            Clientes registrados
+        </h2>
+
+        <table class="inventory-table">
+
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>RUT</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Comuna</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaClientes">
+            </tbody>
+
+        </table>
+
+    </main>
+
+    <script src="js/clientes.js"></script>
+
+</body>
+</html>

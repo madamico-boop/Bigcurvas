@@ -19,6 +19,7 @@
             <a href="inventario.html">Inventario</a>
             <a href="ventas.html">Registrar venta</a>
             <a href="productos.html">Productos</a>
+             <a href="clientes.html">Clientes</a>
             <a href="#">Reportes</a>
         </nav>
     </aside>
@@ -27,6 +28,66 @@
 
         <h1>Inventario</h1>
         <p>Control de stock de productos</p>
+        <section
+    id="editarInventarioSection"
+    class="productos-grid"
+    hidden
+>
+
+    <div class="producto-form-container">
+
+        <h2>Editar inventario</h2>
+
+        <p id="inventarioSeleccionado"></p>
+
+        <form
+            id="editarInventarioForm"
+            class="venta-form"
+        >
+
+            <label for="editarStockActual">
+                Stock actual
+            </label>
+
+            <input
+                type="number"
+                id="editarStockActual"
+                min="0"
+                step="1"
+                required
+            >
+
+
+            <label for="editarStockMinimo">
+                Stock mínimo (opcional)
+            </label>
+
+            <input
+                type="number"
+                id="editarStockMinimo"
+                min="0"
+                step="1"
+            >
+
+
+            <button type="submit">
+                Guardar cambios
+            </button>
+
+            <button
+                type="button"
+                id="cancelarInventario"
+            >
+                Cancelar
+            </button>
+
+        </form>
+
+        <p id="mensajeInventario"></p>
+
+    </div>
+
+</section>
 
         <table class="inventory-table">
 
@@ -39,6 +100,7 @@
         <th>Stock</th>
         <th>Stock mínimo</th>
         <th>Estado</th>
+        <th>Acciones</th>
     </tr>
 </thead>
 

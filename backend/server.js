@@ -680,6 +680,304 @@ app.put('/api/productos/:id', async (req, res) => {
 
 });
 
+app.patch('/api/inventario/:id', async (req, res) => {
+
+    const idInventario = Number(req.params.id);
+
+    const {
+        stock_actual,
+        stock_minimo
+    } = req.body;
+
+    const stockActualNumero = Number(stock_actual);
+
+    const stockMinimoNumero =
+        stock_minimo === '' ||
+        stock_minimo === null ||
+        stock_minimo === undefined
+            ? null
+            : Number(stock_minimo);
+
+    // Validaciones
+    if (
+        !Number.isInteger(stockActualNumero) ||
+        stockActualNumero < 0
+    ) {
+        return res.status(400).json({
+            mensaje: 'El stock actual debe ser un número entero igual o mayor a 0'
+        });
+    }
+
+    if (
+        stockMinimoNumero !== null &&
+        (
+            !Number.isInteger(stockMinimoNumero) ||
+            stockMinimoNumero < 0
+        )
+    ) {
+        return res.status(400).json({
+            mensaje: 'El stock mínimo debe ser un número entero igual o mayor a 0'
+        });
+    }
+
+    try {
+
+        const resultado = await pool.query(`
+            UPDATE inventario
+            SET
+                stock_actual = $1,
+                stock_minimo = $2
+            WHERE id_inventario = $3
+            RETURNING *
+        `, [
+            stockActualNumero,
+            stockMinimoNumero,
+            idInventario
+        ]);
+
+        if (resultado.rows.length === 0) {
+
+            return res.status(404).json({
+                mensaje: 'Registro de inventario no encontrado'
+            });
+
+        }
+
+        res.json({
+            mensaje: 'Inventario actualizado correctamente',
+            inventario: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al actualizar inventario'
+        });
+
+    }
+
+});
+
+app.get('/api/clientes', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                id_cliente,
+                nombre,
+                rut,
+                telefono,
+                correo,
+                direccion,
+                comuna,
+                activo
+            FROM clientes
+            ORDER BY nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener clientes'
+        });
+
+    }
+
+});
+
+app.post('/api/clientes', async (req, res) => {
+
+    const {
+        nombre,
+        rut,
+        telefono,
+        correo,
+        direccion,
+        comuna
+    } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+
+        return res.status(400).json({
+            mensaje: 'El nombre es obligatorio'
+        });
+
+    }
+
+    try {
+
+        const resultado = await pool.query(`
+            INSERT INTO clientes (
+                nombre,
+                rut,
+                telefono,
+                correo,
+                direccion,
+                comuna
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [
+            nombre.trim(),
+            rut || null,
+            telefono || null,
+            correo || null,
+            direccion || null,
+            comuna || null
+        ]);
+
+        res.status(201).json({
+            mensaje: 'Cliente agregado correctamente',
+            cliente: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.code === '23505') {
+
+            return res.status(400).json({
+                mensaje: 'El RUT ingresado ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje: 'Error al agregar cliente'
+        });
+
+    }
+
+});
+
+app.put('/api/clientes/:id', async (req, res) => {
+
+    const idCliente = Number(req.params.id);
+
+    const {
+        nombre,
+        rut,
+        telefono,
+        correo,
+        direccion,
+        comuna
+    } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+
+        return res.status(400).json({
+            mensaje: 'El nombre es obligatorio'
+        });
+
+    }
+
+    try {
+
+        const resultado = await pool.query(`
+            UPDATE clientes
+            SET
+                nombre = $1,
+                rut = $2,
+                telefono = $3,
+                correo = $4,
+                direccion = $5,
+                comuna = $6
+            WHERE id_cliente = $7
+            RETURNING *
+        `, [
+            nombre.trim(),
+            rut || null,
+            telefono || null,
+            correo || null,
+            direccion || null,
+            comuna || null,
+            idCliente
+        ]);
+
+        if (resultado.rows.length === 0) {
+
+            return res.status(404).json({
+                mensaje: 'Cliente no encontrado'
+            });
+
+        }
+
+        res.json({
+            mensaje: 'Cliente actualizado correctamente',
+            cliente: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.code === '23505') {
+
+            return res.status(400).json({
+                mensaje: 'El RUT ingresado ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje: 'Error al actualizar cliente'
+        });
+
+    }
+
+});
+
+app.patch('/api/clientes/:id/estado', async (req, res) => {
+
+    const idCliente = Number(req.params.id);
+    const { activo } = req.body;
+
+    try {
+
+        const resultado = await pool.query(`
+            UPDATE clientes
+            SET activo = $1
+            WHERE id_cliente = $2
+            RETURNING *
+        `, [
+            activo,
+            idCliente
+        ]);
+
+        if (resultado.rows.length === 0) {
+
+            return res.status(404).json({
+                mensaje: 'Cliente no encontrado'
+            });
+
+        }
+
+        res.json({
+            mensaje: activo
+                ? 'Cliente reactivado correctamente'
+                : 'Cliente desactivado correctamente'
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al cambiar el estado del cliente'
+        });
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {
