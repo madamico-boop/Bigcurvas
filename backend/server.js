@@ -253,6 +253,54 @@ app.get('/api/opciones-venta', async (req, res) => {
 
 });
 
+app.get('/api/dashboard', async (req, res) => {
+
+    try {
+
+        const ventasHoy = await pool.query(`
+            SELECT COALESCE(SUM(total), 0) AS total
+            FROM ventas
+            WHERE DATE(fecha) = CURRENT_DATE
+        `);
+
+        const stockTotal = await pool.query(`
+            SELECT COALESCE(SUM(stock_actual), 0) AS total
+            FROM inventario
+        `);
+
+        const stockBajo = await pool.query(`
+            SELECT COUNT(*) AS total
+            FROM inventario
+            WHERE stock_minimo IS NOT NULL
+            AND stock_actual <= stock_minimo
+        `);
+
+        const ventasRegistradas = await pool.query(`
+            SELECT COUNT(*) AS total
+            FROM ventas
+        `);
+
+        res.json({
+            ventasHoy: Number(ventasHoy.rows[0].total),
+            stockTotal: Number(stockTotal.rows[0].total),
+            stockBajo: Number(stockBajo.rows[0].total),
+            ventasRegistradas: Number(
+                ventasRegistradas.rows[0].total
+            )
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al cargar el dashboard'
+        });
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {
