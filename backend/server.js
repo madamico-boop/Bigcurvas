@@ -301,6 +301,271 @@ app.get('/api/dashboard', async (req, res) => {
 
 });
 
+app.get('/api/categorias', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                id_categoria,
+                nombre
+            FROM categorias
+            WHERE activo = TRUE
+            ORDER BY nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener categorías'
+        });
+
+    }
+
+});
+
+app.get('/api/productos', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                p.id_producto,
+                p.nombre,
+                p.descripcion,
+                p.precio,
+                p.activo,
+                c.nombre AS categoria
+            FROM productos p
+            JOIN categorias c
+                ON p.id_categoria = c.id_categoria
+            ORDER BY p.nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener productos'
+        });
+
+    }
+
+});
+
+app.post('/api/productos', async (req, res) => {
+
+    const {
+        nombre,
+        descripcion,
+        id_categoria,
+        precio
+    } = req.body;
+
+    try {
+
+        if (!nombre || !id_categoria || precio === undefined) {
+
+            return res.status(400).json({
+                mensaje: 'Faltan datos obligatorios'
+            });
+
+        }
+
+        if (Number(precio) < 0) {
+
+            return res.status(400).json({
+                mensaje: 'El precio no puede ser negativo'
+            });
+
+        }
+
+        const resultado = await pool.query(`
+            INSERT INTO productos (
+                nombre,
+                descripcion,
+                id_categoria,
+                precio
+            )
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [
+            nombre,
+            descripcion || null,
+            id_categoria,
+            precio
+        ]);
+
+        res.status(201).json({
+            mensaje: 'Producto agregado correctamente',
+            producto: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al agregar producto'
+        });
+
+    }
+
+});
+
+app.post('/api/variantes', async (req, res) => {
+
+    const {
+        id_producto,
+        talla,
+        color,
+        sku,
+        stock_rancagua,
+        minimo_rancagua,
+        stock_bodega,
+        minimo_bodega
+    } = req.body;
+
+    if (!id_producto || !talla || !color) {
+        return res.status(400).json({
+            mensaje: 'Producto, talla y color son obligatorios'
+        });
+    }
+
+    const client = await pool.connect();
+
+    try {
+
+        await client.query('BEGIN');
+
+        // Crear variante
+        const varianteCreada = await client.query(`
+            INSERT INTO variantes (
+                id_producto,
+                talla,
+                color,
+                sku
+            )
+            VALUES ($1, $2, $3, $4)
+            RETURNING id_variante
+        `, [
+            id_producto,
+            talla,
+            color,
+            sku || null
+        ]);
+
+        const idVariante =
+            varianteCreada.rows[0].id_variante;
+
+
+        // Buscar las sucursales
+        const sucursales = await client.query(`
+            SELECT id_sucursal, nombre
+            FROM sucursales
+            WHERE activo = TRUE
+        `);
+
+
+        const rancagua = sucursales.rows.find(
+            sucursal => sucursal.nombre === 'Rancagua'
+        );
+
+        const bodega = sucursales.rows.find(
+            sucursal => sucursal.nombre === 'Bodega'
+        );
+
+
+        // Inventario Rancagua
+        if (rancagua) {
+
+            await client.query(`
+                INSERT INTO inventario (
+                    id_variante,
+                    id_sucursal,
+                    stock_actual,
+                    stock_minimo
+                )
+                VALUES ($1, $2, $3, $4)
+            `, [
+                idVariante,
+                rancagua.id_sucursal,
+                Number(stock_rancagua) || 0,
+                minimo_rancagua === '' ||
+                minimo_rancagua === null ||
+                minimo_rancagua === undefined
+                    ? null
+                    : Number(minimo_rancagua)
+            ]);
+
+        }
+
+
+        // Inventario Bodega
+        if (bodega) {
+
+            await client.query(`
+                INSERT INTO inventario (
+                    id_variante,
+                    id_sucursal,
+                    stock_actual,
+                    stock_minimo
+                )
+                VALUES ($1, $2, $3, $4)
+            `, [
+                idVariante,
+                bodega.id_sucursal,
+                Number(stock_bodega) || 0,
+                minimo_bodega === '' ||
+                minimo_bodega === null ||
+                minimo_bodega === undefined
+                    ? null
+                    : Number(minimo_bodega)
+            ]);
+
+        }
+
+
+        await client.query('COMMIT');
+
+        res.status(201).json({
+            mensaje: 'Variante agregada correctamente'
+        });
+
+    } catch (error) {
+
+        await client.query('ROLLBACK');
+
+        console.error(error);
+
+        if (error.code === '23505') {
+
+            return res.status(400).json({
+                mensaje:
+                    'Esta variante o SKU ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje: 'Error al agregar variante'
+        });
+
+    } finally {
+
+        client.release();
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {

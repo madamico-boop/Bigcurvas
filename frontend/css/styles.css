@@ -213,3 +213,26 @@ button {
     margin-top: 20px;
     font-weight: bold;
 }
+
+/* PRODUCTOS */
+
+.productos-grid {
+    margin-top: 30px;
+    margin-bottom: 40px;
+}
+
+.producto-form-container {
+    max-width: 550px;
+}
+
+.venta-form textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.titulo-tabla {
+    margin-top: 30px;
+}

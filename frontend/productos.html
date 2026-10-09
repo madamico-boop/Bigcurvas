@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Productos | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="productos.html">Productos</a>
+            <a href="#">Reportes</a>
+        </nav>
+
+    </aside>
+
+    <main class="dashboard">
+
+        <h1>Productos</h1>
+        <p>Administración de productos de Bigcurvas</p>
+
+
+        <!-- ========================= -->
+        <!-- AGREGAR PRODUCTO -->
+        <!-- ========================= -->
+
+        <section class="productos-grid">
+
+            <div class="producto-form-container">
+
+                <h2>Agregar producto</h2>
+
+                <form id="productoForm" class="venta-form">
+
+                    <label for="nombreProducto">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nombreProducto"
+                        required
+                    >
+
+
+                    <label for="descripcionProducto">
+                        Descripción
+                    </label>
+
+                    <textarea
+                        id="descripcionProducto"
+                        rows="3"
+                    ></textarea>
+
+
+                    <label for="categoriaProducto">
+                        Categoría
+                    </label>
+
+                    <select
+                        id="categoriaProducto"
+                        required
+                    >
+                        <option value="">
+                            Seleccione una categoría
+                        </option>
+                    </select>
+
+
+                    <label for="precioProducto">
+                        Precio
+                    </label>
+
+                    <input
+                        type="number"
+                        id="precioProducto"
+                        min="0"
+                        required
+                    >
+
+
+                    <button type="submit">
+                        Agregar producto
+                    </button>
+
+                </form>
+
+                <p id="mensajeProducto"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================= -->
+        <!-- AGREGAR VARIANTE -->
+        <!-- ========================= -->
+
+        <section class="productos-grid">
+
+            <div class="producto-form-container">
+
+                <h2>Agregar variante</h2>
+
+                <form id="varianteForm" class="venta-form">
+
+                    <label for="productoVariante">
+                        Producto
+                    </label>
+
+                    <select id="productoVariante" required>
+                        <option value="">
+                            Seleccione un producto
+                        </option>
+                    </select>
+
+
+                    <label for="colorVariante">
+                        Color
+                    </label>
+
+                    <input
+                        type="text"
+                        id="colorVariante"
+                        required
+                    >
+
+
+                    <label for="tallaVariante">
+                        Talla
+                    </label>
+
+                    <input
+                        type="text"
+                        id="tallaVariante"
+                        placeholder="Ej: XL, 2XL, XXL"
+                        required
+                    >
+
+
+                    <label for="skuVariante">
+                        SKU (opcional)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="skuVariante"
+                    >
+
+
+                    <h3>Rancagua</h3>
+
+                    <label for="stockRancagua">
+                        Stock inicial
+                    </label>
+
+                    <input
+                        type="number"
+                        id="stockRancagua"
+                        min="0"
+                        value="0"
+                        required
+                    >
+
+                    <label for="minimoRancagua">
+                        Stock mínimo (opcional)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="minimoRancagua"
+                        min="0"
+                    >
+
+
+                    <h3>Bodega</h3>
+
+                    <label for="stockBodega">
+                        Stock inicial
+                    </label>
+
+                    <input
+                        type="number"
+                        id="stockBodega"
+                        min="0"
+                        value="0"
+                        required
+                    >
+
+                    <label for="minimoBodega">
+                        Stock mínimo (opcional)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="minimoBodega"
+                        min="0"
+                    >
+
+
+                    <button type="submit">
+                        Agregar variante
+                    </button>
+
+                </form>
+
+                <p id="mensajeVariante"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================= -->
+        <!-- LISTADO DE PRODUCTOS -->
+        <!-- ========================= -->
+
+        <h2 class="titulo-tabla">
+            Productos registrados
+        </h2>
+
+        <table class="inventory-table">
+
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaProductos">
+            </tbody>
+
+        </table>
+
+    </main>
+
+    <script src="js/productos.js"></script>
+
+</body>
+</html>
