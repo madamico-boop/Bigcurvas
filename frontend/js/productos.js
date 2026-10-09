@@ -18,6 +18,23 @@ const productoVariante =
 
 const mensajeVariante =
     document.getElementById('mensajeVariante');
+
+const editarProductoSection =
+    document.getElementById('editarProductoSection');
+
+const editarProductoForm =
+    document.getElementById('editarProductoForm');
+
+const editarCategoria =
+    document.getElementById('editarCategoria');
+
+const cancelarEdicion =
+    document.getElementById('cancelarEdicion');
+
+const mensajeEdicion =
+    document.getElementById('mensajeEdicion');
+
+let productoEditandoId = null;
 // ==========================
 // CARGAR CATEGORÍAS
 // ==========================
@@ -34,6 +51,9 @@ async function cargarCategorias() {
 
         categoriaSelect.innerHTML =
             '<option value="">Seleccione una categoría</option>';
+        
+            editarCategoria.innerHTML =
+            '<option value="">Seleccione una categoría</option>';
 
         categorias.forEach(categoria => {
 
@@ -47,6 +67,16 @@ async function cargarCategorias() {
                 categoria.nombre;
 
             categoriaSelect.appendChild(opcion);
+            const opcionEditar =
+    document.createElement('option');
+
+opcionEditar.value =
+    categoria.id_categoria;
+
+opcionEditar.textContent =
+    categoria.nombre;
+
+editarCategoria.appendChild(opcionEditar);
 
         });
 
@@ -91,18 +121,114 @@ async function cargarProductos() {
                 Number(producto.precio)
                     .toLocaleString('es-CL');
 
-            fila.innerHTML = `
-                <td>${producto.nombre}</td>
-                <td>${producto.categoria}</td>
-                <td>$${precio}</td>
-                <td>
-                    ${producto.activo
-                        ? 'Activo'
-                        : 'Inactivo'}
-                </td>
-            `;
+                    fila.innerHTML = `
+                    <td>${producto.nombre}</td>
+                    <td>${producto.categoria}</td>
+                    <td>$${precio}</td>
+
+                    <td>
+                        ${producto.activo
+                            ? 'Activo'
+                            : 'Inactivo'}
+                    </td>
+
+                    <td>
+                        <button class="boton-editar">
+                            Editar
+                        </button>
+
+                        <button class="boton-estado">
+                            ${producto.activo
+                                ? 'Desactivar'
+                                : 'Reactivar'}
+                        </button>
+                    </td>
+                `;
 
             tablaProductos.appendChild(fila);
+            const botonEditar =
+    fila.querySelector('.boton-editar');
+
+botonEditar.addEventListener(
+    'click',
+    () => {
+
+        productoEditandoId =
+            producto.id_producto;
+
+        document
+            .getElementById('editarNombre')
+            .value = producto.nombre;
+
+        document
+            .getElementById('editarDescripcion')
+            .value = producto.descripcion || '';
+
+        editarCategoria.value =
+            producto.id_categoria;
+
+        document
+            .getElementById('editarPrecio')
+            .value = producto.precio;
+
+        editarProductoSection.hidden = false;
+
+        mensajeEdicion.textContent = '';
+
+        editarProductoSection.scrollIntoView({
+            behavior: 'smooth'
+        });
+
+    }
+);
+            const botonEstado =
+    fila.querySelector('.boton-estado');
+
+botonEstado.addEventListener(
+    'click',
+    async () => {
+
+        const nuevoEstado =
+            !producto.activo;
+
+        const confirmar = confirm(
+            nuevoEstado
+                ? `¿Reactivar ${producto.nombre}?`
+                : `¿Desactivar ${producto.nombre}?`
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        const respuesta = await fetch(
+            `/api/productos/${producto.id_producto}/estado`,
+            {
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body: JSON.stringify({
+                    activo: nuevoEstado
+                })
+            }
+        );
+
+        const resultado =
+            await respuesta.json();
+
+        mensajeProducto.textContent =
+            resultado.mensaje;
+
+        if (respuesta.ok) {
+            await cargarProductos();
+        }
+
+    }
+);
 
 
             // =========================
@@ -299,6 +425,173 @@ varianteForm.addEventListener(
                 .value = 0;
 
         }
+
+    }
+);
+
+editarProductoForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        if (!productoEditandoId) {
+            return;
+        }
+
+        const producto = {
+
+            nombre:
+                document
+                    .getElementById('editarNombre')
+                    .value
+                    .trim(),
+
+            descripcion:
+                document
+                    .getElementById('editarDescripcion')
+                    .value
+                    .trim(),
+
+            id_categoria:
+                Number(editarCategoria.value),
+
+            precio:
+                Number(
+                    document
+                        .getElementById('editarPrecio')
+                        .value
+                )
+
+        };
+
+
+        const respuesta = await fetch(
+            `/api/productos/${productoEditandoId}`,
+            {
+
+                method: 'PUT',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify(producto)
+
+            }
+        );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        mensajeEdicion.textContent =
+            resultado.mensaje;
+
+
+        if (respuesta.ok) {
+
+            await cargarProductos();
+
+            productoEditandoId = null;
+
+            editarProductoSection.hidden = true;
+
+        }
+
+    }
+);
+
+editarProductoForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        if (!productoEditandoId) {
+            return;
+        }
+
+        const producto = {
+
+            nombre:
+                document
+                    .getElementById('editarNombre')
+                    .value
+                    .trim(),
+
+            descripcion:
+                document
+                    .getElementById('editarDescripcion')
+                    .value
+                    .trim(),
+
+            id_categoria:
+                Number(editarCategoria.value),
+
+            precio:
+                Number(
+                    document
+                        .getElementById('editarPrecio')
+                        .value
+                )
+
+        };
+
+
+        const respuesta = await fetch(
+            `/api/productos/${productoEditandoId}`,
+            {
+
+                method: 'PUT',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify(producto)
+
+            }
+        );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        mensajeEdicion.textContent =
+            resultado.mensaje;
+
+
+        if (respuesta.ok) {
+
+            await cargarProductos();
+
+            productoEditandoId = null;
+
+            editarProductoSection.hidden = true;
+
+        }
+
+    }
+);
+
+cancelarEdicion.addEventListener(
+    'click',
+    () => {
+
+        productoEditandoId = null;
+
+        editarProductoSection.hidden = true;
+
+        editarProductoForm.reset();
+
+        mensajeEdicion.textContent = '';
 
     }
 );

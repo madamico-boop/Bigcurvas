@@ -337,6 +337,7 @@ app.get('/api/productos', async (req, res) => {
                 p.id_producto,
                 p.nombre,
                 p.descripcion,
+                p.id_categoria,
                 p.precio,
                 p.activo,
                 c.nombre AS categoria
@@ -561,6 +562,119 @@ app.post('/api/variantes', async (req, res) => {
     } finally {
 
         client.release();
+
+    }
+
+});
+
+app.patch('/api/productos/:id/estado', async (req, res) => {
+
+    const idProducto = Number(req.params.id);
+    const { activo } = req.body;
+
+    try {
+
+        const resultado = await pool.query(`
+            UPDATE productos
+            SET activo = $1
+            WHERE id_producto = $2
+            RETURNING id_producto, nombre, activo
+        `, [
+            activo,
+            idProducto
+        ]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({
+                mensaje: 'Producto no encontrado'
+            });
+        }
+
+        res.json({
+            mensaje: activo
+                ? 'Producto reactivado correctamente'
+                : 'Producto desactivado correctamente',
+            producto: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al cambiar el estado del producto'
+        });
+
+    }
+
+});
+
+app.put('/api/productos/:id', async (req, res) => {
+
+    const idProducto = Number(req.params.id);
+
+    const {
+        nombre,
+        descripcion,
+        id_categoria,
+        precio
+    } = req.body;
+
+    try {
+
+        if (!nombre || !id_categoria || precio === undefined) {
+
+            return res.status(400).json({
+                mensaje: 'Faltan datos obligatorios'
+            });
+
+        }
+
+        if (Number(precio) < 0) {
+
+            return res.status(400).json({
+                mensaje: 'El precio no puede ser negativo'
+            });
+
+        }
+
+        const resultado = await pool.query(`
+            UPDATE productos
+            SET
+                nombre = $1,
+                descripcion = $2,
+                id_categoria = $3,
+                precio = $4
+            WHERE id_producto = $5
+            RETURNING *
+        `, [
+            nombre,
+            descripcion || null,
+            id_categoria,
+            precio,
+            idProducto
+        ]);
+
+        if (resultado.rows.length === 0) {
+
+            return res.status(404).json({
+                mensaje: 'Producto no encontrado'
+            });
+
+        }
+
+        res.json({
+            mensaje: 'Producto actualizado correctamente',
+            producto: resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al actualizar producto'
+        });
 
     }
 
