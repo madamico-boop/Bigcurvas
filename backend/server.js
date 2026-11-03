@@ -528,44 +528,169 @@ app.get('/api/dashboard', async (req, res) => {
 
     try {
 
+        // ============================
+        // INDICADORES
+        // ============================
+
         const ventasHoy = await pool.query(`
-            SELECT COALESCE(SUM(total), 0) AS total
+            SELECT
+                COALESCE(SUM(total), 0) AS total
             FROM ventas
-            WHERE DATE(fecha) = CURRENT_DATE
+            WHERE fecha::date = CURRENT_DATE
         `);
+
+
+        const ventasMes = await pool.query(`
+            SELECT
+                COALESCE(SUM(total), 0) AS total
+            FROM ventas
+            WHERE DATE_TRUNC('month', fecha) =
+                  DATE_TRUNC('month', CURRENT_DATE)
+        `);
+
 
         const stockTotal = await pool.query(`
-            SELECT COALESCE(SUM(stock_actual), 0) AS total
+            SELECT
+                COALESCE(SUM(stock_actual), 0) AS total
             FROM inventario
         `);
+
 
         const stockBajo = await pool.query(`
-            SELECT COUNT(*) AS total
+            SELECT
+                COUNT(*) AS total
             FROM inventario
-            WHERE stock_minimo IS NOT NULL
-            AND stock_actual <= stock_minimo
+            WHERE
+                stock_minimo IS NOT NULL
+                AND stock_actual <= stock_minimo
         `);
 
-        const ventasRegistradas = await pool.query(`
-            SELECT COUNT(*) AS total
-            FROM ventas
+
+        // ============================
+        // VENTAS ÚLTIMOS 7 DÍAS
+        // ============================
+
+        const ventas7Dias = await pool.query(`
+            WITH dias AS (
+                SELECT
+                    generate_series(
+                        CURRENT_DATE - INTERVAL '6 days',
+                        CURRENT_DATE,
+                        INTERVAL '1 day'
+                    )::date AS fecha
+            )
+
+            SELECT
+                d.fecha,
+                COALESCE(SUM(v.total), 0) AS total
+
+            FROM dias d
+
+            LEFT JOIN ventas v
+                ON v.fecha::date = d.fecha
+
+            GROUP BY d.fecha
+
+            ORDER BY d.fecha
         `);
+
+
+        // ============================
+        // VENTAS POR SUCURSAL
+        // ============================
+
+        const ventasSucursal = await pool.query(`
+            SELECT
+                s.nombre AS sucursal,
+                COALESCE(SUM(v.total), 0) AS total
+
+            FROM sucursales s
+
+            LEFT JOIN ventas v
+                ON v.id_sucursal = s.id_sucursal
+                AND DATE_TRUNC('month', v.fecha) =
+                    DATE_TRUNC('month', CURRENT_DATE)
+
+            WHERE s.activo = TRUE
+
+            GROUP BY
+                s.id_sucursal,
+                s.nombre
+
+            ORDER BY s.nombre
+        `);
+
+
+        // ============================
+        // PRODUCTOS MÁS VENDIDOS
+        // ============================
+
+        const productosMasVendidos = await pool.query(`
+            SELECT
+                p.nombre AS producto,
+                SUM(d.cantidad) AS cantidad
+
+            FROM detalle_venta d
+
+            JOIN ventas ve
+                ON d.id_venta = ve.id_venta
+
+            JOIN variantes va
+                ON d.id_variante = va.id_variante
+
+            JOIN productos p
+                ON va.id_producto = p.id_producto
+
+            WHERE
+                DATE_TRUNC('month', ve.fecha) =
+                DATE_TRUNC('month', CURRENT_DATE)
+
+            GROUP BY
+                p.id_producto,
+                p.nombre
+
+            ORDER BY cantidad DESC
+
+            LIMIT 5
+        `);
+
 
         res.json({
-            ventasHoy: Number(ventasHoy.rows[0].total),
-            stockTotal: Number(stockTotal.rows[0].total),
-            stockBajo: Number(stockBajo.rows[0].total),
-            ventasRegistradas: Number(
-                ventasRegistradas.rows[0].total
-            )
+
+            ventasHoy:
+                Number(ventasHoy.rows[0].total),
+
+            ventasMes:
+                Number(ventasMes.rows[0].total),
+
+            stockTotal:
+                Number(stockTotal.rows[0].total),
+
+            stockBajo:
+                Number(stockBajo.rows[0].total),
+
+            ventas7Dias:
+                ventas7Dias.rows,
+
+            ventasSucursal:
+                ventasSucursal.rows,
+
+            productosMasVendidos:
+                productosMasVendidos.rows
+
         });
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            'Error al cargar dashboard:',
+            error
+        );
 
         res.status(500).json({
-            mensaje: 'Error al cargar el dashboard'
+            mensaje:
+                'Error al cargar dashboard'
         });
 
     }

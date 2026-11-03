@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/dashboard.js"></script>
 
 <body class="dashboard-body">
@@ -29,29 +30,64 @@
     <main class="dashboard">
 
         <h1>Dashboard</h1>
-        <p>Resumen general del sistema</p>
+<p>Resumen general de Bigcurvas</p>
 
-        <section class="cards">
 
-    <div class="card">
-        <h3>Ventas del día</h3>
+<section class="dashboard-cards">
+
+    <div class="dashboard-card">
+        <h3>Ventas de hoy</h3>
         <p id="ventasHoy">$0</p>
     </div>
 
-    <div class="card">
+
+    <div class="dashboard-card">
+        <h3>Ventas del mes</h3>
+        <p id="ventasMes">$0</p>
+    </div>
+
+
+    <div class="dashboard-card">
         <h3>Stock total</h3>
         <p id="stockTotal">0</p>
     </div>
 
-    <div class="card">
+
+    <div class="dashboard-card">
         <h3>Stock bajo</h3>
         <p id="stockBajo">0</p>
     </div>
 
-    <div class="card">
-        <h3>Ventas registradas</h3>
-        <p id="ventasRegistradas">0</p>
+</section>
+
+
+<section class="graficos-dashboard">
+
+    <div class="grafico-card">
+
+        <h2>Ventas últimos 7 días</h2>
+
+        <canvas id="graficoVentasDias"></canvas>
+
     </div>
+
+
+    <div class="grafico-card">
+
+        <h2>Ventas por sucursal</h2>
+
+        <canvas id="graficoSucursales"></canvas>
+
+    </div>
+
+</section>
+
+
+<section class="grafico-card">
+
+    <h2>Productos más vendidos del mes</h2>
+
+    <canvas id="graficoProductos"></canvas>
 
 </section>
 
