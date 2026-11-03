@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Historial de ventas | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="historial.html">Historial de ventas</a>
+            <a href="productos.html">Productos</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="#">Reportes</a>
+        </nav>
+
+    </aside>
+
+    <main class="dashboard">
+
+        <h1>Historial de ventas</h1>
+        <p>Ventas registradas en el sistema</p>
+
+        <table class="inventory-table">
+
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Sucursal</th>
+                    <th>Canal</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaVentas">
+            </tbody>
+
+        </table>
+
+
+        <section
+            id="detalleVentaSection"
+            class="productos-grid"
+            hidden
+        >
+
+            <h2>Detalle de venta</h2>
+
+            <table class="inventory-table">
+
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Color</th>
+                        <th>Talla</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaDetalleVenta">
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+    <script src="js/historial.js"></script>
+
+</body>
+</html>

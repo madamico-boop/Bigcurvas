@@ -981,6 +981,79 @@ app.patch('/api/clientes/:id/estado', async (req, res) => {
 
 });
 
+app.get('/api/ventas', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                v.id_venta,
+                v.fecha,
+                v.canal,
+                v.estado_pago,
+                v.total,
+                s.nombre AS sucursal,
+                c.nombre AS cliente
+            FROM ventas v
+            JOIN sucursales s
+                ON v.id_sucursal = s.id_sucursal
+            LEFT JOIN clientes c
+                ON v.id_cliente = c.id_cliente
+            ORDER BY v.fecha DESC
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener historial de ventas'
+        });
+
+    }
+
+});
+
+app.get('/api/ventas/:id/detalle', async (req, res) => {
+
+    const idVenta = Number(req.params.id);
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                p.nombre AS producto,
+                v.color,
+                v.talla,
+                d.cantidad,
+                d.precio_unitario,
+                d.cantidad * d.precio_unitario AS subtotal
+            FROM detalle_venta d
+            JOIN variantes v
+                ON d.id_variante = v.id_variante
+            JOIN productos p
+                ON v.id_producto = p.id_producto
+            WHERE d.id_venta = $1
+        `, [
+            idVenta
+        ]);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener detalle de venta'
+        });
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {
