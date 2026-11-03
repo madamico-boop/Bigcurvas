@@ -71,6 +71,7 @@ app.get('/api/inventario', async (req, res) => {
 app.post('/api/ventas', async (req, res) => {
 
     const {
+        id_cliente,
         producto,
         color,
         talla,
@@ -140,20 +141,22 @@ app.post('/api/ventas', async (req, res) => {
         const ventaCreada = await client.query(`
             INSERT INTO ventas (
                 id_usuario,
+                id_cliente,
                 id_sucursal,
                 canal,
                 estado_pago,
                 total
             )
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING id_venta
         `, [
-            1,
-            item.id_sucursal,
-            'Local',
-            'Pagado',
-            total
-        ]);
+    1,
+    id_cliente || null,
+    item.id_sucursal,
+    'Local',
+    'Pagado',
+    total
+]);
 
         const idVenta = ventaCreada.rows[0].id_venta;
 

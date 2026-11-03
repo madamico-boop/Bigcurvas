@@ -8,6 +8,7 @@ const sucursalSelect = document.getElementById('sucursal');
 
 const cantidadInput = document.getElementById('cantidad');
 const stockDisponible = document.getElementById('stockDisponible');
+const clienteSelect = document.getElementById('cliente');
 
 let opcionesVenta = [];
 
@@ -251,6 +252,10 @@ formulario.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const venta = {
+        id_cliente:
+             clienteSelect.value
+                ? Number(clienteSelect.value)
+                : null,
         producto: productoSelect.value,
         color: colorSelect.value,
         talla: tallaSelect.value,
@@ -314,6 +319,50 @@ formulario.addEventListener('submit', async (event) => {
 
 });
 
+async function cargarClientes() {
+
+    try {
+
+        const respuesta =
+            await fetch('/api/clientes');
+
+        const clientes =
+            await respuesta.json();
+
+        clienteSelect.innerHTML =
+            '<option value="">Venta sin cliente</option>';
+
+        clientes
+            .filter(cliente => cliente.activo)
+            .forEach(cliente => {
+
+                const opcion =
+                    document.createElement('option');
+
+                opcion.value =
+                    cliente.id_cliente;
+
+                opcion.textContent =
+                    cliente.rut
+                        ? `${cliente.nombre} - ${cliente.rut}`
+                        : cliente.nombre;
+
+                clienteSelect.appendChild(opcion);
+
+            });
+
+    } catch (error) {
+
+        console.error(
+            'Error al cargar clientes:',
+            error
+        );
+
+    }
+
+}
+
 
 // Cargar productos al abrir la página
 cargarOpcionesVenta();
+cargarClientes();
