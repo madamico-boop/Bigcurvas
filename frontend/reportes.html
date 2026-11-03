@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Reportes | Bigcurvas</title>
+
+    <link
+        rel="stylesheet"
+        href="css/styles.css"
+    >
+
+</head>
+
+
+<body class="dashboard-body">
+
+
+    <aside class="sidebar">
+
+        <h2>Bigcurvas</h2>
+
+        <nav>
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="inventario.html">
+                Inventario
+            </a>
+
+            <a href="ventas.html">
+                Registrar venta
+            </a>
+
+            <a href="historial.html">
+                Historial de ventas
+            </a>
+
+            <a href="productos.html">
+                Productos
+            </a>
+
+            <a href="clientes.html">
+                Clientes
+            </a>
+
+            <a href="reportes.html">
+                Reportes
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="dashboard">
+
+        <h1>Reportes</h1>
+
+        <p>
+            Consulta y análisis de ventas
+        </p>
+
+
+        <!-- FILTROS -->
+
+        <section class="grafico-card">
+
+            <h2>Filtros</h2>
+
+
+            <form
+                id="filtrosReporte"
+                class="venta-form"
+            >
+
+                <label for="desde">
+                    Desde
+                </label>
+
+                <input
+                    type="date"
+                    id="desde"
+                >
+
+
+                <label for="hasta">
+                    Hasta
+                </label>
+
+                <input
+                    type="date"
+                    id="hasta"
+                >
+
+
+                <label for="sucursalReporte">
+                    Sucursal
+                </label>
+
+                <select id="sucursalReporte">
+
+                    <option value="">
+                        Todas las sucursales
+                    </option>
+
+                </select>
+
+
+                <label for="categoriaReporte">
+                    Categoría
+                </label>
+
+                <select id="categoriaReporte">
+
+                    <option value="">
+                        Todas las categorías
+                    </option>
+
+                </select>
+
+
+                <button type="submit">
+                    Generar reporte
+                </button>
+
+
+                <button
+                    type="button"
+                    id="limpiarFiltros"
+                >
+                    Limpiar filtros
+                </button>
+
+            </form>
+
+
+            <p id="mensajeReporte"></p>
+
+        </section>
+
+        <div class="acciones-reporte">
+
+    <button
+        type="button"
+        id="exportarExcel"
+    >
+        Exportar Excel
+    </button>
+
+    <button
+        type="button"
+        id="exportarPdf"
+    >
+        Exportar PDF
+    </button>
+
+</div>
+
+
+        <!-- INDICADORES -->
+
+        <section class="dashboard-cards">
+
+            <div class="dashboard-card">
+
+                <h3>
+                    Total vendido
+                </h3>
+
+                <p id="reporteTotal">
+                    $0
+                </p>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <h3>
+                    Ventas
+                </h3>
+
+                <p id="reporteVentas">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <h3>
+                    Unidades vendidas
+                </h3>
+
+                <p id="reporteUnidades">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <h3>
+                    Ticket promedio
+                </h3>
+
+                <p id="reporteTicket">
+                    $0
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- GRÁFICOS -->
+
+        <section class="graficos-dashboard">
+
+            <div class="grafico-card">
+
+                <h2>
+                    Ventas por día
+                </h2>
+
+                <canvas
+                    id="graficoReporteDias"
+                ></canvas>
+
+            </div>
+
+
+            <div class="grafico-card">
+
+                <h2>
+                    Productos más vendidos
+                </h2>
+
+                <canvas
+                    id="graficoReporteProductos"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- DETALLE -->
+
+        <section class="grafico-card">
+
+            <h2>
+                Detalle de ventas
+            </h2>
+
+
+            <table class="inventory-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Fecha</th>
+
+                        <th>Cliente</th>
+
+                        <th>Sucursal</th>
+
+                        <th>Categoría</th>
+
+                        <th>Producto</th>
+
+                        <th>Color</th>
+
+                        <th>Talla</th>
+
+                        <th>Cantidad</th>
+
+                        <th>Subtotal</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tablaReporte">
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+
+    <script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+<script
+    src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
+></script>
+
+<script
+    src="https://unpkg.com/jspdf@4.1.0/dist/jspdf.umd.min.js"
+></script>
+
+<script
+    src="https://unpkg.com/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js"
+></script>
+
+<script src="js/reportes.js"></script>
+
+
+</body>
+
+</html>

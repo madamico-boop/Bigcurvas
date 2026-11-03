@@ -1447,6 +1447,318 @@ app.get('/api/ventas/:id/detalle', async (req, res) => {
 
 });
 
+app.get('/api/sucursales', async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                id_sucursal,
+                nombre
+            FROM sucursales
+            WHERE activo = TRUE
+            ORDER BY nombre
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener sucursales'
+        });
+
+    }
+
+});
+
+app.get('/api/reportes', async (req, res) => {
+
+    const {
+        desde,
+        hasta,
+        id_sucursal,
+        id_categoria
+    } = req.query;
+
+
+    try {
+
+        const condiciones = [];
+
+        const valores = [];
+
+
+        if (desde) {
+
+            valores.push(desde);
+
+            condiciones.push(
+                `ve.fecha::date >= $${valores.length}`
+            );
+
+        }
+
+
+        if (hasta) {
+
+            valores.push(hasta);
+
+            condiciones.push(
+                `ve.fecha::date <= $${valores.length}`
+            );
+
+        }
+
+
+        if (id_sucursal) {
+
+            valores.push(
+                Number(id_sucursal)
+            );
+
+            condiciones.push(
+                `ve.id_sucursal = $${valores.length}`
+            );
+
+        }
+
+
+        if (id_categoria) {
+
+            valores.push(
+                Number(id_categoria)
+            );
+
+            condiciones.push(
+                `p.id_categoria = $${valores.length}`
+            );
+
+        }
+
+
+        const where =
+            condiciones.length > 0
+                ? `WHERE ${condiciones.join(' AND ')}`
+                : '';
+
+
+        const desdeTablas = `
+            FROM detalle_venta d
+
+            JOIN ventas ve
+                ON d.id_venta = ve.id_venta
+
+            JOIN variantes va
+                ON d.id_variante = va.id_variante
+
+            JOIN productos p
+                ON va.id_producto = p.id_producto
+
+            JOIN categorias c
+                ON p.id_categoria = c.id_categoria
+
+            JOIN sucursales s
+                ON ve.id_sucursal = s.id_sucursal
+
+            LEFT JOIN clientes cl
+                ON ve.id_cliente = cl.id_cliente
+        `;
+
+
+        // =========================
+        // RESUMEN
+        // =========================
+
+        const resumen = await pool.query(`
+            SELECT
+
+                COALESCE(
+                    SUM(
+                        d.cantidad *
+                        d.precio_unitario
+                    ),
+                    0
+                ) AS total,
+
+                COUNT(
+                    DISTINCT ve.id_venta
+                ) AS ventas,
+
+                COALESCE(
+                    SUM(d.cantidad),
+                    0
+                ) AS unidades
+
+            ${desdeTablas}
+
+            ${where}
+        `, valores);
+
+
+        // =========================
+        // VENTAS POR DÍA
+        // =========================
+
+        const ventasPorDia = await pool.query(`
+            SELECT
+
+                ve.fecha::date AS fecha,
+
+                SUM(
+                    d.cantidad *
+                    d.precio_unitario
+                ) AS total
+
+            ${desdeTablas}
+
+            ${where}
+
+            GROUP BY
+                ve.fecha::date
+
+            ORDER BY
+                ve.fecha::date
+        `, valores);
+
+
+        // =========================
+        // PRODUCTOS MÁS VENDIDOS
+        // =========================
+
+        const productosMasVendidos =
+            await pool.query(`
+                SELECT
+
+                    p.nombre AS producto,
+
+                    SUM(
+                        d.cantidad
+                    ) AS cantidad
+
+                ${desdeTablas}
+
+                ${where}
+
+                GROUP BY
+                    p.id_producto,
+                    p.nombre
+
+                ORDER BY
+                    cantidad DESC
+
+                LIMIT 5
+            `, valores);
+
+
+        // =========================
+        // DETALLE
+        // =========================
+
+        const detalle = await pool.query(`
+            SELECT
+
+                ve.id_venta,
+
+                ve.fecha,
+
+                COALESCE(
+                    cl.nombre,
+                    'Sin cliente'
+                ) AS cliente,
+
+                s.nombre AS sucursal,
+
+                c.nombre AS categoria,
+
+                p.nombre AS producto,
+
+                va.color,
+
+                va.talla,
+
+                d.cantidad,
+
+                d.precio_unitario,
+
+                (
+                    d.cantidad *
+                    d.precio_unitario
+                ) AS subtotal
+
+            ${desdeTablas}
+
+            ${where}
+
+            ORDER BY
+                ve.fecha DESC,
+                ve.id_venta DESC
+
+            LIMIT 500
+        `, valores);
+
+
+        const total =
+            Number(
+                resumen.rows[0].total
+            );
+
+        const cantidadVentas =
+            Number(
+                resumen.rows[0].ventas
+            );
+
+        const unidades =
+            Number(
+                resumen.rows[0].unidades
+            );
+
+
+        const ticketPromedio =
+            cantidadVentas > 0
+                ? total / cantidadVentas
+                : 0;
+
+
+        res.json({
+
+            resumen: {
+                total,
+                cantidadVentas,
+                unidades,
+                ticketPromedio
+            },
+
+            ventasPorDia:
+                ventasPorDia.rows,
+
+            productosMasVendidos:
+                productosMasVendidos.rows,
+
+            detalle:
+                detalle.rows
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al generar reporte:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al generar reporte'
+        });
+
+    }
+
+});
+
 
 // Inicia el servidor
 app.listen(PORT, () => {
