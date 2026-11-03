@@ -72,138 +72,403 @@ app.post('/api/ventas', async (req, res) => {
 
     const {
         id_cliente,
-        producto,
-        color,
-        talla,
-        sucursal,
-        cantidad
+        items
     } = req.body;
 
-    const client = await pool.connect();
+
+    // ============================
+    // VALIDACIONES INICIALES
+    // ============================
+
+    if (
+        !Array.isArray(items) ||
+        items.length === 0
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'La venta debe contener productos'
+        });
+
+    }
+
+
+    // Agrupar productos repetidos
+    // por variante + sucursal.
+
+    const agrupados =
+        new Map();
+
+
+    for (const item of items) {
+
+        const idVariante =
+            Number(item.id_variante);
+
+        const idSucursal =
+            Number(item.id_sucursal);
+
+        const cantidad =
+            Number(item.cantidad);
+
+
+        if (
+            !Number.isInteger(idVariante) ||
+            !Number.isInteger(idSucursal) ||
+            !Number.isInteger(cantidad) ||
+            cantidad <= 0
+        ) {
+
+            return res.status(400).json({
+                mensaje:
+                    'Hay productos con datos inválidos'
+            });
+
+        }
+
+
+        const clave =
+            `${idVariante}-${idSucursal}`;
+
+
+        if (agrupados.has(clave)) {
+
+            agrupados.get(clave).cantidad +=
+                cantidad;
+
+        } else {
+
+            agrupados.set(clave, {
+                id_variante:
+                    idVariante,
+
+                id_sucursal:
+                    idSucursal,
+
+                cantidad:
+                    cantidad
+            });
+
+        }
+
+    }
+
+
+    const itemsVenta =
+        [...agrupados.values()];
+
+
+    // Todas las líneas deben salir
+    // desde una misma sucursal.
+
+    const sucursales =
+        [
+            ...new Set(
+                itemsVenta.map(
+                    item =>
+                        item.id_sucursal
+                )
+            )
+        ];
+
+
+    if (sucursales.length !== 1) {
+
+        return res.status(400).json({
+            mensaje:
+                'Todos los productos de una venta deben pertenecer a la misma sucursal'
+        });
+
+    }
+
+
+    const idSucursalVenta =
+        sucursales[0];
+
+
+    const client =
+        await pool.connect();
+
 
     try {
 
         await client.query('BEGIN');
 
-        // Buscar variante, stock, precio y sucursal
-        const resultado = await client.query(`
-            SELECT
-                i.id_inventario,
-                i.stock_actual,
-                v.id_variante,
-                p.precio,
-                s.id_sucursal
-            FROM inventario i
-            JOIN variantes v
-                ON i.id_variante = v.id_variante
-            JOIN productos p
-                ON v.id_producto = p.id_producto
-            JOIN sucursales s
-                ON i.id_sucursal = s.id_sucursal
-            WHERE
-                p.nombre = $1
-                AND v.color = $2
-                AND v.talla = $3
-                AND s.nombre = $4
-            FOR UPDATE
-        `, [
-            producto,
-            color,
-            talla,
-            sucursal
-        ]);
 
-        if (resultado.rows.length === 0) {
+        // ============================
+        // VALIDAR CLIENTE
+        // ============================
 
-            await client.query('ROLLBACK');
+        if (id_cliente) {
 
-            return res.status(404).json({
-                mensaje: 'Producto o variante no encontrada'
+            const cliente =
+                await client.query(`
+                    SELECT id_cliente
+                    FROM clientes
+                    WHERE
+                        id_cliente = $1
+                        AND activo = TRUE
+                `, [
+                    id_cliente
+                ]);
+
+
+            if (
+                cliente.rows.length === 0
+            ) {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+                return res.status(400).json({
+                    mensaje:
+                        'El cliente seleccionado no es válido'
+                });
+
+            }
+
+        }
+
+
+        // ============================
+        // VALIDAR PRODUCTOS Y STOCK
+        // ============================
+
+        const productosValidados = [];
+
+        let total = 0;
+
+
+        for (const item of itemsVenta) {
+
+            const resultado =
+                await client.query(`
+                    SELECT
+                        i.id_inventario,
+                        i.stock_actual,
+
+                        v.id_variante,
+                        v.color,
+                        v.talla,
+
+                        p.nombre,
+                        p.precio
+
+                    FROM inventario i
+
+                    JOIN variantes v
+                        ON i.id_variante =
+                           v.id_variante
+
+                    JOIN productos p
+                        ON v.id_producto =
+                           p.id_producto
+
+                    JOIN sucursales s
+                        ON i.id_sucursal =
+                           s.id_sucursal
+
+                    WHERE
+                        i.id_variante = $1
+                        AND i.id_sucursal = $2
+                        AND p.activo = TRUE
+                        AND s.activo = TRUE
+
+                    FOR UPDATE
+                `, [
+                    item.id_variante,
+                    item.id_sucursal
+                ]);
+
+
+            if (
+                resultado.rows.length === 0
+            ) {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+                return res.status(404).json({
+                    mensaje:
+                        'Uno de los productos ya no está disponible'
+                });
+
+            }
+
+
+            const producto =
+                resultado.rows[0];
+
+
+            if (
+                producto.stock_actual <
+                item.cantidad
+            ) {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+                return res.status(400).json({
+                    mensaje:
+                        `Stock insuficiente para ${producto.nombre} ${producto.color} ${producto.talla}`
+                });
+
+            }
+
+
+            const precio =
+                Number(producto.precio);
+
+
+            total +=
+                precio *
+                item.cantidad;
+
+
+            productosValidados.push({
+
+                id_inventario:
+                    producto.id_inventario,
+
+                id_variante:
+                    producto.id_variante,
+
+                cantidad:
+                    item.cantidad,
+
+                precio:
+                    precio
+
             });
 
         }
 
-        const item = resultado.rows[0];
 
-        if (item.stock_actual < cantidad) {
+        // ============================
+        // CREAR VENTA
+        // ============================
 
-            await client.query('ROLLBACK');
+        const ventaCreada =
+            await client.query(`
+                INSERT INTO ventas (
+                    id_usuario,
+                    id_cliente,
+                    id_sucursal,
+                    canal,
+                    estado_pago,
+                    total
+                )
 
-            return res.status(400).json({
-                mensaje: 'Stock insuficiente'
-            });
+                VALUES (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    $6
+                )
 
-        }
-
-        const total = Number(item.precio) * cantidad;
-
-        // Crear venta
-        const ventaCreada = await client.query(`
-            INSERT INTO ventas (
-                id_usuario,
-                id_cliente,
-                id_sucursal,
-                canal,
-                estado_pago,
+                RETURNING id_venta
+            `, [
+                1,
+                id_cliente || null,
+                idSucursalVenta,
+                'Local',
+                'Pagado',
                 total
-            )
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id_venta
-        `, [
-    1,
-    id_cliente || null,
-    item.id_sucursal,
-    'Local',
-    'Pagado',
-    total
-]);
+            ]);
 
-        const idVenta = ventaCreada.rows[0].id_venta;
 
-        // Crear detalle
-        await client.query(`
-            INSERT INTO detalle_venta (
-                id_venta,
-                id_variante,
-                cantidad,
-                precio_unitario
-            )
-            VALUES ($1, $2, $3, $4)
-        `, [
-            idVenta,
-            item.id_variante,
-            cantidad,
-            item.precio
-        ]);
+        const idVenta =
+            ventaCreada.rows[0]
+                .id_venta;
 
-        // Descontar stock
-        const stockActualizado = await client.query(`
-            UPDATE inventario
-            SET stock_actual = stock_actual - $1
-            WHERE id_inventario = $2
-            RETURNING stock_actual
-        `, [
-            cantidad,
-            item.id_inventario
-        ]);
+
+        // ============================
+        // DETALLES + STOCK
+        // ============================
+
+        for (
+            const producto
+            of productosValidados
+        ) {
+
+            await client.query(`
+                INSERT INTO detalle_venta (
+                    id_venta,
+                    id_variante,
+                    cantidad,
+                    precio_unitario
+                )
+
+                VALUES (
+                    $1,
+                    $2,
+                    $3,
+                    $4
+                )
+            `, [
+                idVenta,
+                producto.id_variante,
+                producto.cantidad,
+                producto.precio
+            ]);
+
+
+            await client.query(`
+                UPDATE inventario
+
+                SET stock_actual =
+                    stock_actual - $1
+
+                WHERE id_inventario = $2
+            `, [
+                producto.cantidad,
+                producto.id_inventario
+            ]);
+
+        }
+
+
+        // ============================
+        // CONFIRMAR TRANSACCIÓN
+        // ============================
 
         await client.query('COMMIT');
 
-        res.json({
-            mensaje: 'Venta registrada correctamente',
-            stockActual: stockActualizado.rows[0].stock_actual,
-            total: total
+
+        res.status(201).json({
+
+            mensaje:
+                'Venta registrada correctamente',
+
+            idVenta:
+                idVenta,
+
+            total:
+                total
+
         });
+
 
     } catch (error) {
 
-        await client.query('ROLLBACK');
+        await client.query(
+            'ROLLBACK'
+        );
+
 
         console.error(error);
 
+
         res.status(500).json({
-            mensaje: 'Error al registrar la venta'
+            mensaje:
+                'Error al registrar la venta'
         });
+
 
     } finally {
 
@@ -219,7 +484,10 @@ app.get('/api/opciones-venta', async (req, res) => {
 
         const resultado = await pool.query(`
             SELECT
+                v.id_variante,
+                s.id_sucursal,
                 p.nombre AS producto,
+                p.precio,
                 v.color,
                 v.talla,
                 s.nombre AS sucursal,

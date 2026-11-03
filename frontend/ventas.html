@@ -28,40 +28,85 @@
     <main class="dashboard">
 
         <h1>Registrar venta</h1>
-        <p>Ingrese los datos de la venta</p>
+        <p>Agregue uno o más productos a la venta</p>
+
+
+        <!-- CLIENTE -->
+
+        <div class="venta-form">
+
+            <label for="cliente">
+                Cliente (opcional)
+            </label>
+
+            <select id="cliente">
+                <option value="">
+                    Venta sin cliente
+                </option>
+            </select>
+
+        </div>
+
+
+        <!-- AGREGAR PRODUCTO -->
 
         <form id="ventaForm" class="venta-form">
 
-            <label for="cliente">Cliente (opcional)</label>
-            <select id="cliente">
-                <option value="">Venta sin cliente</option>
-            </select>
+            <h2>Agregar producto</h2>
 
-            <label for="producto">Producto</label>
+            <label for="producto">
+                Producto
+            </label>
+
             <select id="producto" required>
-                <option value="">Seleccione un producto</option>
+                <option value="">
+                    Seleccione un producto
+                </option>
             </select>
 
-            <label for="color">Color</label>
+
+            <label for="color">
+                Color
+            </label>
+
             <select id="color" required disabled>
-                <option value="">Seleccione un color</option>
+                <option value="">
+                    Seleccione un color
+                </option>
             </select>
 
-            <label for="talla">Talla</label>
+
+            <label for="talla">
+                Talla
+            </label>
+
             <select id="talla" required disabled>
-                <option value="">Seleccione una talla</option>
+                <option value="">
+                    Seleccione una talla
+                </option>
             </select>
 
-            <label for="sucursal">Sucursal</label>
+
+            <label for="sucursal">
+                Sucursal
+            </label>
+
             <select id="sucursal" required disabled>
-                <option value="">Seleccione una sucursal</option>
+                <option value="">
+                    Seleccione una sucursal
+                </option>
             </select>
+
 
             <p id="stockDisponible">
                 Stock disponible: -
             </p>
 
-            <label for="cantidad">Cantidad</label>
+
+            <label for="cantidad">
+                Cantidad
+            </label>
+
             <input
                 type="number"
                 id="cantidad"
@@ -69,11 +114,54 @@
                 required
             >
 
+
             <button type="submit">
-                Registrar venta
+                Agregar a la venta
             </button>
 
         </form>
+
+
+        <!-- CARRITO -->
+
+        <h2 class="titulo-tabla">
+            Productos de la venta
+        </h2>
+
+        <table class="inventory-table">
+
+            <thead>
+
+                <tr>
+                    <th>Producto</th>
+                    <th>Color</th>
+                    <th>Talla</th>
+                    <th>Sucursal</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="tablaCarrito">
+            </tbody>
+
+        </table>
+
+
+        <h3 id="totalVenta">
+            Total: $0
+        </h3>
+
+
+        <button
+            type="button"
+            id="confirmarVenta"
+        >
+            Confirmar venta
+        </button>
+
 
         <p id="mensajeVenta"></p>
 
