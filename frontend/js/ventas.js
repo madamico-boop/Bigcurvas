@@ -51,7 +51,7 @@ async function cargarClientes() {
     try {
 
         const respuesta =
-            await fetch('/api/clientes');
+            await fetch('/api/clientes/opciones');
 
         const clientes =
             await respuesta.json();
@@ -60,9 +60,7 @@ async function cargarClientes() {
             '<option value="">Venta sin cliente</option>';
 
 
-        clientes
-            .filter(cliente => cliente.activo)
-            .forEach(cliente => {
+        clientes.forEach(cliente => {
 
                 const opcion =
                     document.createElement('option');

@@ -1,7 +1,11 @@
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const pool = require('./config/db');
+
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -11,9 +15,81 @@ const PORT = 3000;
 // Permite recibir datos JSON desde el frontend
 app.use(express.json());
 
+app.use(session({
+
+    name: 'bigcurvas.sid',
+
+    secret: process.env.SESSION_SECRET,
+
+    resave: false,
+
+    saveUninitialized: false,
+
+    cookie: {
+
+        httpOnly: true,
+
+        sameSite: 'lax',
+
+        secure: false,
+
+        maxAge:
+            8 * 60 * 60 * 1000
+
+    }
+
+}));
+
 
 // Permite usar los archivos del frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+// =====================================
+// AUTENTICACIÓN Y ROLES
+// =====================================
+
+function requiereAutenticacion(req, res, next) {
+
+    if (!req.session.usuario) {
+
+        return res.status(401).json({
+            mensaje: 'Debe iniciar sesión'
+        });
+
+    }
+
+    next();
+
+}
+
+
+function requiereAdmin(req, res, next) {
+
+    if (!req.session.usuario) {
+
+        return res.status(401).json({
+            mensaje: 'Debe iniciar sesión'
+        });
+
+    }
+
+
+    if (
+        req.session.usuario.rol !==
+        'administrador'
+    ) {
+
+        return res.status(403).json({
+            mensaje:
+                'No tiene permisos para realizar esta acción'
+        });
+
+    }
+
+
+    next();
+
+}
 
 
 
@@ -27,9 +103,223 @@ app.get('/', (req, res) => {
 
 });
 
+app.post('/api/auth/login', async (req, res) => {
+
+    const {
+        correo,
+        password
+    } = req.body;
+
+
+    if (!correo || !password) {
+
+        return res.status(400).json({
+            mensaje:
+                'Correo y contraseña son obligatorios'
+        });
+
+    }
+
+
+    try {
+
+        const resultado =
+            await pool.query(`
+                SELECT
+                    id_usuario,
+                    nombre,
+                    correo,
+                    password_hash,
+                    rol,
+                    activo
+
+                FROM usuarios
+
+                WHERE
+                    LOWER(correo) =
+                    LOWER($1)
+
+                LIMIT 1
+            `, [
+                correo.trim()
+            ]);
+
+
+        if (
+            resultado.rows.length === 0
+        ) {
+
+            return res.status(401).json({
+                mensaje:
+                    'Correo o contraseña incorrectos'
+            });
+
+        }
+
+
+        const usuario =
+            resultado.rows[0];
+
+
+        if (!usuario.activo) {
+
+            return res.status(403).json({
+                mensaje:
+                    'El usuario se encuentra desactivado'
+            });
+
+        }
+
+
+        const passwordCorrecta =
+            await bcrypt.compare(
+                password,
+                usuario.password_hash
+            );
+
+
+        if (!passwordCorrecta) {
+
+            return res.status(401).json({
+                mensaje:
+                    'Correo o contraseña incorrectos'
+            });
+
+        }
+
+
+        req.session.regenerate(error => {
+
+            if (error) {
+
+                console.error(error);
+
+                return res.status(500).json({
+                    mensaje:
+                        'Error al iniciar sesión'
+                });
+
+            }
+
+
+            req.session.usuario = {
+
+                id_usuario:
+                    usuario.id_usuario,
+
+                nombre:
+                    usuario.nombre,
+
+                correo:
+                    usuario.correo,
+
+                rol:
+                    usuario.rol
+
+            };
+
+
+            req.session.save(error => {
+
+                if (error) {
+
+                    console.error(error);
+
+                    return res.status(500).json({
+                        mensaje:
+                            'Error al iniciar sesión'
+                    });
+
+                }
+
+
+                res.json({
+
+                    mensaje:
+                        'Sesión iniciada correctamente',
+
+                    usuario:
+                        req.session.usuario
+
+                });
+
+            });
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            'Error en login:',
+            error
+        );
+
+
+        res.status(500).json({
+            mensaje:
+                'Error al iniciar sesión'
+        });
+
+    }
+
+});
+
+app.get('/api/auth/me', (req, res) => {
+
+    if (!req.session.usuario) {
+
+        return res.status(401).json({
+            autenticado: false
+        });
+
+    }
+
+
+    res.json({
+
+        autenticado: true,
+
+        usuario:
+            req.session.usuario
+
+    });
+
+});
+
+app.post('/api/auth/logout', (req, res) => {
+
+    req.session.destroy(error => {
+
+        if (error) {
+
+            console.error(error);
+
+            return res.status(500).json({
+                mensaje:
+                    'Error al cerrar sesión'
+            });
+
+        }
+
+
+        res.clearCookie(
+            'bigcurvas.sid'
+        );
+
+
+        res.json({
+            mensaje:
+                'Sesión cerrada correctamente'
+        });
+
+    });
+
+});
+
 
 // Ruta para obtener el inventario
-app.get('/api/inventario', async (req, res) => {
+app.get('/api/inventario',requiereAdmin, async (req, res) => {
 
     try {
 
@@ -68,7 +358,7 @@ app.get('/api/inventario', async (req, res) => {
 
 
 // Ruta para registrar una venta
-app.post('/api/ventas', async (req, res) => {
+app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
 
     const {
         id_cliente,
@@ -373,7 +663,7 @@ app.post('/api/ventas', async (req, res) => {
 
                 RETURNING id_venta
             `, [
-                1,
+                req.session.usuario.id_usuario,
                 id_cliente || null,
                 idSucursalVenta,
                 'Local',
@@ -478,7 +768,7 @@ app.post('/api/ventas', async (req, res) => {
 
 });
 
-app.get('/api/opciones-venta', async (req, res) => {
+app.get('/api/opciones-venta',requiereAutenticacion, async (req, res) => {
 
     try {
 
@@ -524,7 +814,7 @@ app.get('/api/opciones-venta', async (req, res) => {
 
 });
 
-app.get('/api/dashboard', async (req, res) => {
+app.get('/api/dashboard', requiereAdmin, async (req, res) => {
 
     try {
 
@@ -697,7 +987,7 @@ app.get('/api/dashboard', async (req, res) => {
 
 });
 
-app.get('/api/categorias', async (req, res) => {
+app.get('/api/categorias',requiereAdmin, async (req, res) => {
 
     try {
 
@@ -724,7 +1014,7 @@ app.get('/api/categorias', async (req, res) => {
 
 });
 
-app.get('/api/productos', async (req, res) => {
+app.get('/api/productos',requiereAdmin, async (req, res) => {
 
     try {
 
@@ -757,7 +1047,7 @@ app.get('/api/productos', async (req, res) => {
 
 });
 
-app.post('/api/productos', async (req, res) => {
+app.post('/api/productos', requiereAdmin, async (req, res) => {
 
     const {
         nombre,
@@ -817,7 +1107,7 @@ app.post('/api/productos', async (req, res) => {
 
 });
 
-app.post('/api/variantes', async (req, res) => {
+app.post('/api/variantes', requiereAdmin, async (req, res) => {
 
     const {
         id_producto,
@@ -963,7 +1253,7 @@ app.post('/api/variantes', async (req, res) => {
 
 });
 
-app.patch('/api/productos/:id/estado', async (req, res) => {
+app.patch('/api/productos/:id/estado',requiereAdmin, async (req, res) => {
 
     const idProducto = Number(req.params.id);
     const { activo } = req.body;
@@ -1005,7 +1295,7 @@ app.patch('/api/productos/:id/estado', async (req, res) => {
 
 });
 
-app.put('/api/productos/:id', async (req, res) => {
+app.put('/api/productos/:id',requiereAdmin, async (req, res) => {
 
     const idProducto = Number(req.params.id);
 
@@ -1076,7 +1366,7 @@ app.put('/api/productos/:id', async (req, res) => {
 
 });
 
-app.patch('/api/inventario/:id', async (req, res) => {
+app.patch('/api/inventario/:id',requiereAdmin, async (req, res) => {
 
     const idInventario = Number(req.params.id);
 
@@ -1156,7 +1446,42 @@ app.patch('/api/inventario/:id', async (req, res) => {
 
 });
 
-app.get('/api/clientes', async (req, res) => {
+app.get('/api/clientes/opciones',requiereAutenticacion, async (req, res) => {
+
+        try {
+
+            const resultado =
+                await pool.query(`
+                    SELECT
+                        id_cliente,
+                        nombre,
+                        rut
+                    FROM clientes
+                    WHERE activo = TRUE
+                    ORDER BY nombre
+                `);
+
+            res.json(
+                resultado.rows
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            res.status(500).json({
+                mensaje:
+                    'Error al obtener clientes'
+            });
+
+        }
+
+    }
+);
+
+
+
+app.get('/api/clientes', requiereAdmin, async (req, res) => {
 
     try {
 
@@ -1188,7 +1513,7 @@ app.get('/api/clientes', async (req, res) => {
 
 });
 
-app.post('/api/clientes', async (req, res) => {
+app.post('/api/clientes', requiereAdmin, async (req, res) => {
 
     const {
         nombre,
@@ -1254,7 +1579,7 @@ app.post('/api/clientes', async (req, res) => {
 
 });
 
-app.put('/api/clientes/:id', async (req, res) => {
+app.put('/api/clientes/:id', requiereAdmin, async (req, res) => {
 
     const idCliente = Number(req.params.id);
 
@@ -1331,7 +1656,7 @@ app.put('/api/clientes/:id', async (req, res) => {
 
 });
 
-app.patch('/api/clientes/:id/estado', async (req, res) => {
+app.patch('/api/clientes/:id/estado',requiereAdmin, async (req, res) => {
 
     const idCliente = Number(req.params.id);
     const { activo } = req.body;
@@ -1374,7 +1699,7 @@ app.patch('/api/clientes/:id/estado', async (req, res) => {
 
 });
 
-app.get('/api/ventas', async (req, res) => {
+app.get('/api/ventas',requiereAdmin, async (req, res) => {
 
     try {
 
@@ -1409,7 +1734,7 @@ app.get('/api/ventas', async (req, res) => {
 
 });
 
-app.get('/api/ventas/:id/detalle', async (req, res) => {
+app.get('/api/ventas/:id/detalle',requiereAdmin, async (req, res) => {
 
     const idVenta = Number(req.params.id);
 
@@ -1447,7 +1772,7 @@ app.get('/api/ventas/:id/detalle', async (req, res) => {
 
 });
 
-app.get('/api/sucursales', async (req, res) => {
+app.get('/api/sucursales',requiereAdmin, async (req, res) => {
 
     try {
 
@@ -1474,7 +1799,7 @@ app.get('/api/sucursales', async (req, res) => {
 
 });
 
-app.get('/api/reportes', async (req, res) => {
+app.get('/api/reportes',requiereAdmin, async (req, res) => {
 
     const {
         desde,

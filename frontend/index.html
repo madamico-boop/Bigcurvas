@@ -1,42 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bigcurvas</title>
 
-    <link rel="stylesheet" href="css/styles.css">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Iniciar sesión | Bigcurvas</title>
+
+    <link
+        rel="stylesheet"
+        href="css/styles.css"
+    >
+
 </head>
+
 
 <body>
 
-    <main class="login-container">
+    <main>
+
         <h1>Bigcurvas</h1>
 
-        <p>Sistema de gestión de inventario y ventas</p>
+        <h2>Iniciar sesión</h2>
 
-        <form action="dashboard.html">
 
-    <label for="correo">Correo</label>
-    <input
-        type="email"
-        id="correo"
-        placeholder="correo@bigcurvas.cl"
-    >
+        <form id="loginForm">
 
-    <label for="password">Contraseña</label>
-    <input
-        type="password"
-        id="password"
-        placeholder="Contraseña"
-    >
+            <label for="correo">
+                Correo
+            </label>
 
-    <button type="submit">
-        Ingresar
-    </button>
+            <input
+                type="email"
+                id="correo"
+                required
+                autocomplete="email"
+            >
 
-</form>
+
+            <label for="password">
+                Contraseña
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                required
+                autocomplete="current-password"
+            >
+
+
+            <button type="submit">
+                Iniciar sesión
+            </button>
+
+        </form>
+
+
+        <p id="mensajeLogin"></p>
+
     </main>
 
+
+    <script src="js/login.js"></script>
+
 </body>
+
 </html>
