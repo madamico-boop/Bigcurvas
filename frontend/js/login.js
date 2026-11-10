@@ -68,20 +68,8 @@ loginForm.addEventListener(
             }
 
 
-            if (
-                resultado.usuario.rol ===
-                'administrador'
-            ) {
-
-                window.location.href =
-                    'dashboard.html';
-
-            } else {
-
-                window.location.href =
-                    'ventas.html';
-
-            }
+           window.location.href =
+                'dashboard.html';
 
         } catch (error) {
 

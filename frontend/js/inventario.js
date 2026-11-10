@@ -25,6 +25,65 @@ const mensajeInventario =
 
 let inventarioEditandoId = null;
 
+let usuarioActual = null;
+
+
+// ===============================
+// CARGAR USUARIO ACTUAL
+// ===============================
+
+async function cargarUsuario() {
+
+    try {
+
+        const respuesta =
+            await fetch(
+                '/api/auth/me',
+                {
+                    credentials: 'include'
+                }
+            );
+
+
+        if (!respuesta.ok) {
+
+            window.location.href =
+                'index.html';
+
+            return false;
+
+        }
+
+
+        const datos =
+            await respuesta.json();
+
+
+        usuarioActual =
+            datos.usuario;
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener usuario:',
+            error
+        );
+
+
+        window.location.href =
+            'index.html';
+
+
+        return false;
+
+    }
+
+}
+
 
 // ===============================
 // CARGAR INVENTARIO
@@ -35,41 +94,100 @@ async function cargarInventario() {
     try {
 
         const respuesta =
-            await fetch('/api/inventario');
+            await fetch(
+                '/api/inventario',
+                {
+                    credentials: 'include'
+                }
+            );
+
+
+        if (respuesta.status === 401) {
+
+            window.location.href =
+                'index.html';
+
+            return;
+
+        }
+
 
         const inventario =
             await respuesta.json();
 
+
+        if (!respuesta.ok) {
+
+            console.error(
+                inventario.mensaje
+            );
+
+            return;
+
+        }
+
+
         tablaInventario.innerHTML = '';
+
+
+        const esAdmin =
+            usuarioActual &&
+            usuarioActual.rol ===
+                'administrador';
 
 
         inventario.forEach(item => {
 
-            let estado = 'Disponible';
+            let estado =
+                'Disponible';
 
-            if (item.stock_actual === 0) {
 
-                estado = 'Sin stock';
-
-            } else if (
-                item.stock_minimo !== null &&
-                item.stock_actual <= item.stock_minimo
+            if (
+                Number(item.stock_actual) === 0
             ) {
 
-                estado = 'Stock bajo';
+                estado =
+                    'Sin stock';
+
+
+            } else if (
+
+                item.stock_minimo !== null &&
+
+                Number(item.stock_actual) <=
+                Number(item.stock_minimo)
+
+            ) {
+
+                estado =
+                    'Stock bajo';
 
             }
 
 
             const fila =
-                document.createElement('tr');
+                document.createElement(
+                    'tr'
+                );
 
 
             fila.innerHTML = `
-                <td>${item.producto}</td>
-                <td>${item.color}</td>
-                <td>${item.talla}</td>
-                <td>${item.sucursal}</td>
+
+                <td>
+                    ${item.producto}
+                </td>
+
+                <td>
+                    ${item.color}
+                </td>
+
+                <td>
+                    ${item.talla}
+                </td>
+
+                <td>
+                    ${item.sucursal}
+                </td>
 
                 <td>
                     ${item.stock_actual}
@@ -88,19 +206,39 @@ async function cargarInventario() {
                 </td>
 
                 <td>
-                    <button class="boton-editar-inventario">
-                        Editar
-                    </button>
+
+                    ${
+                        esAdmin
+                            ? `
+                                <button
+                                    class="boton-editar-inventario"
+                                >
+                                    Editar
+                                </button>
+                            `
+                            : '-'
+                    }
+
                 </td>
+
             `;
 
 
-            tablaInventario.appendChild(fila);
+            tablaInventario.appendChild(
+                fila
+            );
 
 
             // ===============================
-            // BOTÓN EDITAR
+            // SOLO ADMIN PUEDE EDITAR
             // ===============================
+
+            if (!esAdmin) {
+
+                return;
+
+            }
+
 
             const botonEditar =
                 fila.querySelector(
@@ -116,8 +254,9 @@ async function cargarInventario() {
                         item.id_inventario;
 
 
-                    inventarioSeleccionado.textContent =
-                        `${item.producto} / ${item.color} / ${item.talla} / ${item.sucursal}`;
+                    inventarioSeleccionado
+                        .textContent =
+                            `${item.producto} / ${item.color} / ${item.talla} / ${item.sucursal}`;
 
 
                     editarStockActual.value =
@@ -130,21 +269,25 @@ async function cargarInventario() {
                             : item.stock_minimo;
 
 
-                    mensajeInventario.textContent = '';
+                    mensajeInventario
+                        .textContent = '';
 
 
-                    editarInventarioSection.hidden =
-                        false;
+                    editarInventarioSection
+                        .hidden = false;
 
 
-                    editarInventarioSection.scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    editarInventarioSection
+                        .scrollIntoView({
+                            behavior:
+                                'smooth'
+                        });
 
                 }
             );
 
         });
+
 
     } catch (error) {
 
@@ -164,20 +307,41 @@ async function cargarInventario() {
 
 editarInventarioForm.addEventListener(
     'submit',
-    async (event) => {
+    async event => {
 
         event.preventDefault();
 
 
-        if (!inventarioEditandoId) {
+        // Seguridad adicional en frontend
+
+        if (
+            !usuarioActual ||
+            usuarioActual.rol !==
+                'administrador'
+        ) {
+
+            mensajeInventario
+                .textContent =
+                    'No tiene permisos para editar inventario';
+
             return;
+
+        }
+
+
+        if (!inventarioEditandoId) {
+
+            return;
+
         }
 
 
         const datos = {
 
             stock_actual:
-                Number(editarStockActual.value),
+                Number(
+                    editarStockActual.value
+                ),
 
             stock_minimo:
                 editarStockMinimo.value
@@ -185,41 +349,70 @@ editarInventarioForm.addEventListener(
         };
 
 
-        const respuesta =
-            await fetch(
-                `/api/inventario/${inventarioEditandoId}`,
-                {
+        try {
 
-                    method: 'PATCH',
+            const respuesta =
+                await fetch(
+                    `/api/inventario/${inventarioEditandoId}`,
+                    {
 
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
+                        method:
+                            'PATCH',
 
-                    body:
-                        JSON.stringify(datos)
+                        credentials:
+                            'include',
 
-                }
+                        headers: {
+
+                            'Content-Type':
+                                'application/json'
+
+                        },
+
+                        body:
+                            JSON.stringify(
+                                datos
+                            )
+
+                    }
+                );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            mensajeInventario
+                .textContent =
+                    resultado.mensaje;
+
+
+            if (respuesta.ok) {
+
+                await cargarInventario();
+
+
+                inventarioEditandoId =
+                    null;
+
+
+                editarInventarioSection
+                    .hidden = true;
+
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                'Error al actualizar inventario:',
+                error
             );
 
 
-        const resultado =
-            await respuesta.json();
-
-
-        mensajeInventario.textContent =
-            resultado.mensaje;
-
-
-        if (respuesta.ok) {
-
-            await cargarInventario();
-
-            inventarioEditandoId = null;
-
-            editarInventarioSection.hidden =
-                true;
+            mensajeInventario
+                .textContent =
+                    'Error al actualizar inventario';
 
         }
 
@@ -228,25 +421,59 @@ editarInventarioForm.addEventListener(
 
 
 // ===============================
-// CANCELAR
+// CANCELAR EDICIÓN
 // ===============================
 
 cancelarInventario.addEventListener(
     'click',
     () => {
 
-        inventarioEditandoId = null;
+        inventarioEditandoId =
+            null;
 
-        editarInventarioSection.hidden =
-            true;
 
-        editarInventarioForm.reset();
+        editarInventarioSection
+            .hidden = true;
 
-        mensajeInventario.textContent = '';
+
+        editarInventarioForm
+            .reset();
+
+
+        mensajeInventario
+            .textContent = '';
 
     }
 );
 
 
-// Cargar inventario al abrir
-cargarInventario();
+// ===============================
+// INICIO
+// ===============================
+
+async function iniciar() {
+
+    // Siempre ocultamos inicialmente
+    // el formulario de edición.
+
+    editarInventarioSection.hidden =
+        true;
+
+
+    const autenticado =
+        await cargarUsuario();
+
+
+    if (!autenticado) {
+
+        return;
+
+    }
+
+
+    await cargarInventario();
+
+}
+
+
+iniciar();

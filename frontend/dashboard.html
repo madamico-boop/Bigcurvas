@@ -1,97 +1,338 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Dashboard | Bigcurvas</title>
 
-    <link rel="stylesheet" href="css/styles.css">
+    <link
+        rel="stylesheet"
+        href="css/styles.css"
+    >
+
 </head>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/dashboard.js"></script>
+
 
 <body class="dashboard-body">
 
+
+    <!-- ========================= -->
+    <!-- SIDEBAR -->
+    <!-- ========================= -->
+
     <aside class="sidebar">
+
         <h2>Bigcurvas</h2>
 
         <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="inventario.html">Inventario</a>
-            <a href="ventas.html">Registrar venta</a>
-            <a href="historial.html">Historial de ventas</a>
-            <a href="productos.html">Productos</a>
-            <a href="clientes.html">Clientes</a>
-            <a href="reportes.html">Reportes</a>
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="inventario.html">
+                Inventario
+            </a>
+
+            <a href="ventas.html">
+                Registrar venta
+            </a>
+
+            <a href="historial.html">
+                Historial de ventas
+            </a>
+
+            <a href="productos.html">
+                Productos
+            </a>
+
+            <a href="clientes.html">
+                Clientes
+            </a>
+
+            <a href="reportes.html">
+                Reportes
+            </a>
+
         </nav>
+
     </aside>
+
+
+    <!-- ========================= -->
+    <!-- CONTENIDO -->
+    <!-- ========================= -->
 
     <main class="dashboard">
 
         <h1>Dashboard</h1>
-<p>Resumen general de Bigcurvas</p>
+
+        <p id="bienvenidaDashboard">
+            Resumen general de Bigcurvas
+        </p>
 
 
-<section class="dashboard-cards">
+        <!-- ========================= -->
+        <!-- DASHBOARD ADMINISTRADOR -->
+        <!-- ========================= -->
 
-    <div class="dashboard-card">
-        <h3>Ventas de hoy</h3>
-        <p id="ventasHoy">$0</p>
-    </div>
+        <div
+            id="dashboardAdmin"
+            hidden
+        >
 
-
-    <div class="dashboard-card">
-        <h3>Ventas del mes</h3>
-        <p id="ventasMes">$0</p>
-    </div>
+            <section class="dashboard-cards">
 
 
-    <div class="dashboard-card">
-        <h3>Stock total</h3>
-        <p id="stockTotal">0</p>
-    </div>
+                <div class="dashboard-card">
+
+                    <h3>
+                        Ventas de hoy
+                    </h3>
+
+                    <p id="ventasHoy">
+                        $0
+                    </p>
+
+                </div>
 
 
-    <div class="dashboard-card">
-        <h3>Stock bajo</h3>
-        <p id="stockBajo">0</p>
-    </div>
+                <div class="dashboard-card">
 
-</section>
+                    <h3>
+                        Ventas del mes
+                    </h3>
 
+                    <p id="ventasMes">
+                        $0
+                    </p>
 
-<section class="graficos-dashboard">
-
-    <div class="grafico-card">
-
-        <h2>Ventas últimos 7 días</h2>
-
-        <canvas id="graficoVentasDias"></canvas>
-
-    </div>
+                </div>
 
 
-    <div class="grafico-card">
+                <div class="dashboard-card">
 
-        <h2>Ventas por sucursal</h2>
+                    <h3>
+                        Stock total
+                    </h3>
 
-        <canvas id="graficoSucursales"></canvas>
+                    <p id="stockTotal">
+                        0
+                    </p>
 
-    </div>
-
-</section>
+                </div>
 
 
-<section class="grafico-card">
+                <div class="dashboard-card">
 
-    <h2>Productos más vendidos del mes</h2>
+                    <h3>
+                        Stock bajo
+                    </h3>
 
-    <canvas id="graficoProductos"></canvas>
+                    <p id="stockBajo">
+                        0
+                    </p>
 
-</section>
+                </div>
+
+
+            </section>
+
+
+            <!-- GRÁFICOS -->
+
+            <section class="graficos-dashboard">
+
+
+                <div class="grafico-card">
+
+                    <h2>
+                        Ventas últimos 7 días
+                    </h2>
+
+                    <canvas
+                        id="graficoVentasDias"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="grafico-card">
+
+                    <h2>
+                        Ventas por sucursal
+                    </h2>
+
+                    <canvas
+                        id="graficoSucursales"
+                    ></canvas>
+
+                </div>
+
+
+            </section>
+
+
+            <section class="grafico-card">
+
+                <h2>
+                    Productos más vendidos del mes
+                </h2>
+
+                <canvas
+                    id="graficoProductos"
+                ></canvas>
+
+            </section>
+
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- DASHBOARD VENDEDORA -->
+        <!-- ========================= -->
+
+        <div
+            id="dashboardVendedora"
+            hidden
+        >
+
+            <section class="dashboard-cards">
+
+
+                <div class="dashboard-card">
+
+                    <h3>
+                        Mis ventas de hoy
+                    </h3>
+
+                    <p id="ventasHoyVendedora">
+                        $0
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <h3>
+                        Ventas registradas hoy
+                    </h3>
+
+                    <p id="cantidadVentasVendedora">
+                        0
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <h3>
+                        Productos con stock bajo
+                    </h3>
+
+                    <p id="stockBajoVendedora">
+                        0
+                    </p>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- ACCIÓN RÁPIDA -->
+
+            <section class="grafico-card">
+
+                <h2>
+                    Acciones rápidas
+                </h2>
+
+                <a
+                    href="ventas.html"
+                    class="boton-dashboard"
+                >
+                    Registrar nueva venta
+                </a>
+
+            </section>
+
+
+            <!-- ÚLTIMAS VENTAS -->
+
+            <section class="grafico-card">
+
+                <h2>
+                    Mis últimas ventas
+                </h2>
+
+
+                <table class="inventory-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Fecha
+                            </th>
+
+                            <th>
+                                Cliente
+                            </th>
+
+                            <th>
+                                Sucursal
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="ultimasVentasVendedora"
+                    >
+                    </tbody>
+
+                </table>
+
+
+            </section>
+
+
+        </div>
+
 
     </main>
 
+
+    <!-- ========================= -->
+    <!-- SCRIPTS -->
+    <!-- ========================= -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
+
+    <script src="js/dashboard.js"></script>
+    <script src="js/sesion.js"></script>
+
+
 </body>
+
 </html>

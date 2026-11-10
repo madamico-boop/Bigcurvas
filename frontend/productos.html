@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Productos | Bigcurvas</title>
 
-    <link rel="stylesheet" href="css/styles.css">
+    <link
+        rel="stylesheet"
+        href="css/styles.css"
+    >
 </head>
+
 
 <body class="dashboard-body">
 
@@ -16,34 +25,70 @@
         <h2>Bigcurvas</h2>
 
         <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="inventario.html">Inventario</a>
-            <a href="ventas.html">Registrar venta</a>
-            <a href="historial.html">Historial de ventas</a>
-            <a href="productos.html">Productos</a>
-            <a href="clientes.html">Clientes</a>
-            <a href="reportes.html">Reportes</a>
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="inventario.html">
+                Inventario
+            </a>
+
+            <a href="ventas.html">
+                Registrar venta
+            </a>
+
+            <a href="historial.html">
+                Historial de ventas
+            </a>
+
+            <a href="productos.html">
+                Productos
+            </a>
+
+            <a href="clientes.html">
+                Clientes
+            </a>
+
+            <a href="reportes.html">
+                Reportes
+            </a>
+
         </nav>
 
     </aside>
 
+
     <main class="dashboard">
 
         <h1>Productos</h1>
-        <p>Administración de productos de Bigcurvas</p>
+
+        <p>
+            Consulta y administración de productos de Bigcurvas
+        </p>
 
 
-        <!-- ========================= -->
-        <!-- AGREGAR PRODUCTO -->
-        <!-- ========================= -->
+        <!-- ===================================== -->
+        <!-- AGREGAR PRODUCTO - SOLO ADMIN -->
+        <!-- ===================================== -->
 
-        <section class="productos-grid">
+        <section
+            id="agregarProductoSection"
+            class="productos-grid"
+            hidden
+        >
 
             <div class="producto-form-container">
 
-                <h2>Agregar producto</h2>
+                <h2>
+                    Agregar producto
+                </h2>
 
-                <form id="productoForm" class="venta-form">
+
+                <form
+                    id="productoForm"
+                    class="venta-form"
+                >
 
                     <label for="nombreProducto">
                         Nombre
@@ -74,9 +119,11 @@
                         id="categoriaProducto"
                         required
                     >
+
                         <option value="">
                             Seleccione una categoría
                         </option>
+
                     </select>
 
 
@@ -98,115 +145,142 @@
 
                 </form>
 
+
                 <p id="mensajeProducto"></p>
 
             </div>
 
         </section>
 
-        <!-- ========================= -->
-<!-- EDITAR PRODUCTO -->
-<!-- ========================= -->
 
-<section
-    id="editarProductoSection"
-    class="productos-grid"
-    hidden
->
+        <!-- ===================================== -->
+        <!-- EDITAR PRODUCTO - SOLO ADMIN -->
+        <!-- ===================================== -->
 
-    <div class="producto-form-container">
-
-        <h2>Editar producto</h2>
-
-        <form id="editarProductoForm" class="venta-form">
-
-            <label for="editarNombre">
-                Nombre
-            </label>
-
-            <input
-                type="text"
-                id="editarNombre"
-                required
-            >
-
-
-            <label for="editarDescripcion">
-                Descripción
-            </label>
-
-            <textarea
-                id="editarDescripcion"
-                rows="3"
-            ></textarea>
-
-
-            <label for="editarCategoria">
-                Categoría
-            </label>
-
-            <select
-                id="editarCategoria"
-                required
-            >
-                <option value="">
-                    Seleccione una categoría
-                </option>
-            </select>
-
-
-            <label for="editarPrecio">
-                Precio
-            </label>
-
-            <input
-                type="number"
-                id="editarPrecio"
-                min="0"
-                required
-            >
-
-
-            <button type="submit">
-                Guardar cambios
-            </button>
-
-            <button
-                type="button"
-                id="cancelarEdicion"
-            >
-                Cancelar
-            </button>
-
-        </form>
-
-        <p id="mensajeEdicion"></p>
-
-    </div>
-
-</section>
-
-
-        <!-- ========================= -->
-        <!-- AGREGAR VARIANTE -->
-        <!-- ========================= -->
-
-        <section class="productos-grid">
+        <section
+            id="editarProductoSection"
+            class="productos-grid"
+            hidden
+        >
 
             <div class="producto-form-container">
 
-                <h2>Agregar variante</h2>
+                <h2>
+                    Editar producto
+                </h2>
 
-                <form id="varianteForm" class="venta-form">
+
+                <form
+                    id="editarProductoForm"
+                    class="venta-form"
+                >
+
+                    <label for="editarNombre">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarNombre"
+                        required
+                    >
+
+
+                    <label for="editarDescripcion">
+                        Descripción
+                    </label>
+
+                    <textarea
+                        id="editarDescripcion"
+                        rows="3"
+                    ></textarea>
+
+
+                    <label for="editarCategoria">
+                        Categoría
+                    </label>
+
+                    <select
+                        id="editarCategoria"
+                        required
+                    >
+
+                        <option value="">
+                            Seleccione una categoría
+                        </option>
+
+                    </select>
+
+
+                    <label for="editarPrecio">
+                        Precio
+                    </label>
+
+                    <input
+                        type="number"
+                        id="editarPrecio"
+                        min="0"
+                        required
+                    >
+
+
+                    <button type="submit">
+                        Guardar cambios
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="cancelarEdicion"
+                    >
+                        Cancelar
+                    </button>
+
+                </form>
+
+
+                <p id="mensajeEdicion"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================== -->
+        <!-- AGREGAR VARIANTE - SOLO ADMIN -->
+        <!-- ===================================== -->
+
+        <section
+            id="agregarVarianteSection"
+            class="productos-grid"
+            hidden
+        >
+
+            <div class="producto-form-container">
+
+                <h2>
+                    Agregar variante
+                </h2>
+
+
+                <form
+                    id="varianteForm"
+                    class="venta-form"
+                >
 
                     <label for="productoVariante">
                         Producto
                     </label>
 
-                    <select id="productoVariante" required>
+                    <select
+                        id="productoVariante"
+                        required
+                    >
+
                         <option value="">
                             Seleccione un producto
                         </option>
+
                     </select>
 
 
@@ -243,7 +317,10 @@
                     >
 
 
-                    <h3>Rancagua</h3>
+                    <h3>
+                        Rancagua
+                    </h3>
+
 
                     <label for="stockRancagua">
                         Stock inicial
@@ -257,6 +334,7 @@
                         required
                     >
 
+
                     <label for="minimoRancagua">
                         Stock mínimo (opcional)
                     </label>
@@ -268,7 +346,10 @@
                     >
 
 
-                    <h3>Bodega</h3>
+                    <h3>
+                        Bodega
+                    </h3>
+
 
                     <label for="stockBodega">
                         Stock inicial
@@ -281,6 +362,7 @@
                         value="0"
                         required
                     >
+
 
                     <label for="minimoBodega">
                         Stock mínimo (opcional)
@@ -299,6 +381,7 @@
 
                 </form>
 
+
                 <p id="mensajeVariante"></p>
 
             </div>
@@ -306,25 +389,46 @@
         </section>
 
 
-        <!-- ========================= -->
+        <!-- ===================================== -->
         <!-- LISTADO DE PRODUCTOS -->
-        <!-- ========================= -->
+        <!-- ADMIN Y VENDEDORA -->
+        <!-- ===================================== -->
 
         <h2 class="titulo-tabla">
             Productos registrados
         </h2>
 
+
         <table class="inventory-table">
 
             <thead>
+
                 <tr>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Precio</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+
+                    <th>
+                        Producto
+                    </th>
+
+                    <th>
+                        Categoría
+                    </th>
+
+                    <th>
+                        Precio
+                    </th>
+
+                    <th>
+                        Estado
+                    </th>
+
+                    <th>
+                        Acciones
+                    </th>
+
                 </tr>
+
             </thead>
+
 
             <tbody id="tablaProductos">
             </tbody>
@@ -333,7 +437,10 @@
 
     </main>
 
+
     <script src="js/productos.js"></script>
+    <script src="js/sesion.js"></script>
 
 </body>
+
 </html>
