@@ -45,9 +45,38 @@ const agregarVarianteSection =
     );
 
 
+const buscarProducto =
+    document.getElementById('buscarProducto');
+
+const filtroCategoriaProducto =
+    document.getElementById('filtroCategoriaProducto');
+
+const filtroEstadoProducto =
+    document.getElementById('filtroEstadoProducto');
+
+const limpiarFiltrosProductos =
+    document.getElementById('limpiarFiltrosProductos');
+
+const contadorProductos =
+    document.getElementById('contadorProductos');
+
+const variantesProductoSection =
+    document.getElementById('variantesProductoSection');
+
+const productoVariantesSeleccionado =
+    document.getElementById('productoVariantesSeleccionado');
+
+const tablaVariantesProducto =
+    document.getElementById('tablaVariantesProducto');
+
+const cerrarVariantesProducto =
+    document.getElementById('cerrarVariantesProducto');
+
 let productoEditandoId = null;
 
 let usuarioActual = null;
+
+let productosCompletos = [];
 
 
 // =====================================
@@ -269,6 +298,451 @@ async function cargarCategorias() {
 // CARGAR PRODUCTOS
 // =====================================
 
+function escaparHtml(valor) {
+
+    return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+}
+
+
+function cargarCategoriasFiltroProductos() {
+
+    const valorActual =
+        filtroCategoriaProducto.value;
+
+    const categorias =
+        [
+            ...new Set(
+                productosCompletos.map(
+                    producto => producto.categoria
+                )
+            )
+        ].sort();
+
+    filtroCategoriaProducto.innerHTML =
+        '<option value="">Todas las categorías</option>';
+
+    categorias.forEach(categoria => {
+
+        const opcion =
+            document.createElement('option');
+
+        opcion.value = categoria;
+        opcion.textContent = categoria;
+
+        filtroCategoriaProducto
+            .appendChild(opcion);
+
+    });
+
+    if (categorias.includes(valorActual)) {
+
+        filtroCategoriaProducto.value =
+            valorActual;
+
+    }
+
+}
+
+
+function aplicarFiltrosProductos() {
+
+    const texto =
+        buscarProducto.value
+            .trim()
+            .toLowerCase();
+
+    const categoria =
+        filtroCategoriaProducto.value;
+
+    const estado =
+        filtroEstadoProducto.value;
+
+    const filtrados =
+        productosCompletos.filter(
+            producto => {
+
+                const coincideTexto =
+                    !texto ||
+                    String(producto.nombre)
+                        .toLowerCase()
+                        .includes(texto);
+
+                const coincideCategoria =
+                    !categoria ||
+                    producto.categoria ===
+                        categoria;
+
+                const coincideEstado =
+                    !estado ||
+                    (
+                        estado === 'activo'
+                            ? producto.activo
+                            : !producto.activo
+                    );
+
+                return (
+                    coincideTexto &&
+                    coincideCategoria &&
+                    coincideEstado
+                );
+
+            }
+        );
+
+    mostrarProductos(filtrados);
+
+}
+
+
+async function mostrarVariantesProducto(producto) {
+
+    productoVariantesSeleccionado
+        .textContent =
+            producto.nombre;
+
+    tablaVariantesProducto.innerHTML =
+        '<tr><td colspan="5" class="sin-resultados">Cargando variantes...</td></tr>';
+
+    variantesProductoSection.hidden =
+        false;
+
+    variantesProductoSection
+        .scrollIntoView({
+            behavior: 'smooth'
+        });
+
+    try {
+
+        const respuesta =
+            await fetch(
+                '/api/productos/' +
+                producto.id_producto +
+                '/variantes',
+                {
+                    credentials: 'include'
+                }
+            );
+
+        if (respuesta.status === 401) {
+
+            window.location.href =
+                'index.html';
+
+            return;
+
+        }
+
+        const variantes =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            tablaVariantesProducto.innerHTML =
+                '<tr><td colspan="5" class="sin-resultados">' +
+                escaparHtml(
+                    variantes.mensaje ||
+                    'Error al cargar variantes'
+                ) +
+                '</td></tr>';
+
+            return;
+
+        }
+
+        if (variantes.length === 0) {
+
+            tablaVariantesProducto.innerHTML =
+                '<tr><td colspan="5" class="sin-resultados">Este producto todavía no tiene variantes registradas.</td></tr>';
+
+            return;
+
+        }
+
+        tablaVariantesProducto.innerHTML =
+            '';
+
+        variantes.forEach(variante => {
+
+            const fila =
+                document.createElement('tr');
+
+            fila.innerHTML =
+                '<td>' +
+                    escaparHtml(variante.color) +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(variante.talla) +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(variante.sku || '-') +
+                '</td>' +
+                '<td>' +
+                    variante.stock_rancagua +
+                '</td>' +
+                '<td>' +
+                    variante.stock_bodega +
+                '</td>';
+
+            tablaVariantesProducto
+                .appendChild(fila);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al cargar variantes:',
+            error
+        );
+
+        tablaVariantesProducto.innerHTML =
+            '<tr><td colspan="5" class="sin-resultados">Error al cargar variantes.</td></tr>';
+
+    }
+
+}
+
+
+function mostrarProductos(productos) {
+
+    tablaProductos.innerHTML =
+        '';
+
+    contadorProductos.textContent =
+        'Mostrando ' +
+        productos.length +
+        ' de ' +
+        productosCompletos.length +
+        ' productos';
+
+    if (productos.length === 0) {
+
+        tablaProductos.innerHTML =
+            '<tr><td colspan="6" class="sin-resultados">No hay productos que coincidan con los filtros seleccionados.</td></tr>';
+
+        return;
+
+    }
+
+    const admin =
+        esAdministrador();
+
+    productos.forEach(producto => {
+
+        const fila =
+            document.createElement('tr');
+
+        const precio =
+            Number(producto.precio)
+                .toLocaleString('es-CL');
+
+        const estadoTexto =
+            producto.activo
+                ? 'Activo'
+                : 'Inactivo';
+
+        const estadoClase =
+            producto.activo
+                ? 'estado-producto-activo'
+                : 'estado-producto-inactivo';
+
+        let acciones = '-';
+
+        if (admin) {
+
+            acciones =
+                '<button type="button" class="boton-editar">Editar</button>' +
+                '<button type="button" class="boton-estado">' +
+                    (
+                        producto.activo
+                            ? 'Desactivar'
+                            : 'Reactivar'
+                    ) +
+                '</button>';
+
+        }
+
+        fila.innerHTML =
+            '<td>' +
+                escaparHtml(producto.nombre) +
+            '</td>' +
+            '<td>' +
+                escaparHtml(producto.categoria) +
+            '</td>' +
+            '<td>$' +
+                precio +
+            '</td>' +
+            '<td><span class="estado-producto ' +
+                estadoClase +
+                '">' +
+                estadoTexto +
+            '</span></td>' +
+            '<td><button type="button" class="boton-variantes">Ver variantes</button></td>' +
+            '<td>' +
+                acciones +
+            '</td>';
+
+        tablaProductos
+            .appendChild(fila);
+
+        const botonVariantes =
+            fila.querySelector(
+                '.boton-variantes'
+            );
+
+        botonVariantes.addEventListener(
+            'click',
+            () =>
+                mostrarVariantesProducto(
+                    producto
+                )
+        );
+
+        if (!admin) {
+
+            return;
+
+        }
+
+        const botonEditar =
+            fila.querySelector(
+                '.boton-editar'
+            );
+
+        const botonEstado =
+            fila.querySelector(
+                '.boton-estado'
+            );
+
+        botonEditar.addEventListener(
+            'click',
+            () => {
+
+                productoEditandoId =
+                    producto.id_producto;
+
+                document
+                    .getElementById(
+                        'editarNombre'
+                    )
+                    .value =
+                        producto.nombre;
+
+                document
+                    .getElementById(
+                        'editarDescripcion'
+                    )
+                    .value =
+                        producto.descripcion ||
+                        '';
+
+                editarCategoria.value =
+                    producto.id_categoria;
+
+                document
+                    .getElementById(
+                        'editarPrecio'
+                    )
+                    .value =
+                        producto.precio;
+
+                editarProductoSection.hidden =
+                    false;
+
+                mensajeEdicion.textContent =
+                    '';
+
+                editarProductoSection
+                    .scrollIntoView({
+                        behavior: 'smooth'
+                    });
+
+            }
+        );
+
+        botonEstado.addEventListener(
+            'click',
+            async () => {
+
+                const nuevoEstado =
+                    !producto.activo;
+
+                const confirmar =
+                    confirm(
+                        nuevoEstado
+                            ? '¿Reactivar ' +
+                                producto.nombre +
+                                '?'
+                            : '¿Desactivar ' +
+                                producto.nombre +
+                                '?'
+                    );
+
+                if (!confirmar) {
+
+                    return;
+
+                }
+
+                try {
+
+                    const respuestaEstado =
+                        await fetch(
+                            '/api/productos/' +
+                            producto.id_producto +
+                            '/estado',
+                            {
+                                method: 'PATCH',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type':
+                                        'application/json'
+                                },
+                                body:
+                                    JSON.stringify({
+                                        activo:
+                                            nuevoEstado
+                                    })
+                            }
+                        );
+
+                    const resultado =
+                        await respuestaEstado
+                            .json();
+
+                    mensajeProducto
+                        .textContent =
+                            resultado.mensaje;
+
+                    if (respuestaEstado.ok) {
+
+                        await cargarProductos();
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'Error al cambiar estado:',
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+}
+
+
 async function cargarProductos() {
 
     try {
@@ -281,7 +755,6 @@ async function cargarProductos() {
                 }
             );
 
-
         if (respuesta.status === 401) {
 
             window.location.href =
@@ -291,10 +764,8 @@ async function cargarProductos() {
 
         }
 
-
         const productos =
             await respuesta.json();
-
 
         if (!respuesta.ok) {
 
@@ -306,305 +777,43 @@ async function cargarProductos() {
 
         }
 
-
-        tablaProductos.innerHTML =
-            '';
-
+        productosCompletos =
+            productos;
 
         productoVariante.innerHTML =
             '<option value="">Seleccione un producto</option>';
 
-
-        const admin =
-            esAdministrador();
-
-
-        productos.forEach(
-            producto => {
-
-                const fila =
-                    document.createElement(
-                        'tr'
-                    );
-
-
-                const precio =
-                    Number(
-                        producto.precio
-                    ).toLocaleString(
-                        'es-CL'
-                    );
-
-
-                // =====================================
-                // TABLA
-                // =====================================
-
-                fila.innerHTML = `
-
-                    <td>
-                        ${producto.nombre}
-                    </td>
-
-                    <td>
-                        ${producto.categoria}
-                    </td>
-
-                    <td>
-                        $${precio}
-                    </td>
-
-                    <td>
-                        ${
-                            producto.activo
-                                ? 'Activo'
-                                : 'Inactivo'
-                        }
-                    </td>
-
-                    <td>
-
-                        ${
-                            admin
-                                ? `
-                                    <button
-                                        class="boton-editar"
-                                    >
-                                        Editar
-                                    </button>
-
-                                    <button
-                                        class="boton-estado"
-                                    >
-                                        ${
-                                            producto.activo
-                                                ? 'Desactivar'
-                                                : 'Reactivar'
-                                        }
-                                    </button>
-                                `
-                                : '-'
-                        }
-
-                    </td>
-
-                `;
-
-
-                tablaProductos
-                    .appendChild(
-                        fila
-                    );
-
-
-                // =====================================
-                // SOLO ADMINISTRADOR
-                // =====================================
-
-                if (admin) {
-
-                    const botonEditar =
-                        fila.querySelector(
-                            '.boton-editar'
-                        );
-
-
-                    const botonEstado =
-                        fila.querySelector(
-                            '.boton-estado'
-                        );
-
-
-                    // ===============================
-                    // EDITAR PRODUCTO
-                    // ===============================
-
-                    botonEditar.addEventListener(
-                        'click',
-                        () => {
-
-                            productoEditandoId =
-                                producto.id_producto;
-
-
-                            document
-                                .getElementById(
-                                    'editarNombre'
-                                )
-                                .value =
-                                    producto.nombre;
-
-
-                            document
-                                .getElementById(
-                                    'editarDescripcion'
-                                )
-                                .value =
-                                    producto.descripcion ||
-                                    '';
-
-
-                            editarCategoria.value =
-                                producto.id_categoria;
-
-
-                            document
-                                .getElementById(
-                                    'editarPrecio'
-                                )
-                                .value =
-                                    producto.precio;
-
-
-                            editarProductoSection
-                                .hidden =
-                                    false;
-
-
-                            mensajeEdicion
-                                .textContent =
-                                    '';
-
-
-                            editarProductoSection
-                                .scrollIntoView({
-                                    behavior:
-                                        'smooth'
-                                });
-
-                        }
-                    );
-
-
-                    // ===============================
-                    // ACTIVAR / DESACTIVAR
-                    // ===============================
-
-                    botonEstado.addEventListener(
-                        'click',
-                        async () => {
-
-                            const nuevoEstado =
-                                !producto.activo;
-
-
-                            const confirmar =
-                                confirm(
-
-                                    nuevoEstado
-                                        ? `¿Reactivar ${producto.nombre}?`
-                                        : `¿Desactivar ${producto.nombre}?`
-
-                                );
-
-
-                            if (!confirmar) {
-
-                                return;
-
-                            }
-
-
-                            try {
-
-                                const respuestaEstado =
-                                    await fetch(
-
-                                        `/api/productos/${producto.id_producto}/estado`,
-
-                                        {
-
-                                            method:
-                                                'PATCH',
-
-                                            credentials:
-                                                'include',
-
-                                            headers: {
-
-                                                'Content-Type':
-                                                    'application/json'
-
-                                            },
-
-                                            body:
-                                                JSON.stringify({
-                                                    activo:
-                                                        nuevoEstado
-                                                })
-
-                                        }
-
-                                    );
-
-
-                                const resultado =
-                                    await respuestaEstado
-                                        .json();
-
-
-                                mensajeProducto
-                                    .textContent =
-                                        resultado.mensaje;
-
-
-                                if (
-                                    respuestaEstado.ok
-                                ) {
-
-                                    await cargarProductos();
-
-                                }
-
-
-                            } catch (error) {
-
-                                console.error(
-                                    'Error al cambiar estado:',
-                                    error
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-
-
-                // =====================================
-                // SELECT PARA CREAR VARIANTES
-                // =====================================
-
-                if (
-                    admin &&
-                    producto.activo
-                ) {
+        if (esAdministrador()) {
+
+            productosCompletos
+                .filter(
+                    producto =>
+                        producto.activo
+                )
+                .forEach(producto => {
 
                     const opcion =
                         document.createElement(
                             'option'
                         );
 
-
                     opcion.value =
                         producto.id_producto;
 
-
                     opcion.textContent =
                         producto.nombre;
-
 
                     productoVariante
                         .appendChild(
                             opcion
                         );
 
-                }
+                });
 
-            }
-        );
+        }
 
+        cargarCategoriasFiltroProductos();
+        aplicarFiltrosProductos();
 
     } catch (error) {
 
@@ -617,6 +826,50 @@ async function cargarProductos() {
 
 }
 
+
+buscarProducto.addEventListener(
+    'input',
+    aplicarFiltrosProductos
+);
+
+filtroCategoriaProducto.addEventListener(
+    'change',
+    aplicarFiltrosProductos
+);
+
+filtroEstadoProducto.addEventListener(
+    'change',
+    aplicarFiltrosProductos
+);
+
+limpiarFiltrosProductos.addEventListener(
+    'click',
+    () => {
+
+        buscarProducto.value = '';
+        filtroCategoriaProducto.value = '';
+        filtroEstadoProducto.value = '';
+
+        aplicarFiltrosProductos();
+
+    }
+);
+
+cerrarVariantesProducto.addEventListener(
+    'click',
+    () => {
+
+        variantesProductoSection.hidden =
+            true;
+
+        tablaVariantesProducto.innerHTML =
+            '';
+
+        productoVariantesSeleccionado
+            .textContent = '';
+
+    }
+);
 
 // =====================================
 // AGREGAR PRODUCTO
