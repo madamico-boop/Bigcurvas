@@ -10,6 +10,9 @@ const clienteSelect =
 const buscarClienteVenta =
     document.getElementById('buscarClienteVenta');
 
+const resultadosClienteVenta =
+    document.getElementById('resultadosClienteVenta');
+
 const canalVenta =
     document.getElementById('canalVenta');
 
@@ -18,6 +21,9 @@ const productoSelect =
 
 const buscarProductoVenta =
     document.getElementById('buscarProductoVenta');
+
+const resultadosProductoVenta =
+    document.getElementById('resultadosProductoVenta');
 
 const colorSelect =
     document.getElementById('color');
@@ -231,9 +237,127 @@ async function cargarClientes() {
 }
 
 
+function mostrarResultadosClienteVenta() {
+
+    const texto =
+        buscarClienteVenta.value
+            .trim()
+            .toLowerCase();
+
+    mostrarClientes();
+
+    if (!texto) {
+
+        resultadosClienteVenta.hidden =
+            true;
+
+        resultadosClienteVenta.innerHTML =
+            '';
+
+        return;
+
+    }
+
+    const coincidencias =
+        clientesVenta
+            .filter(cliente => {
+
+                const nombre =
+                    String(cliente.nombre)
+                        .toLowerCase();
+
+                const rut =
+                    String(cliente.rut || '')
+                        .toLowerCase();
+
+                return (
+                    nombre.includes(texto) ||
+                    rut.includes(texto)
+                );
+
+            })
+            .slice(0, 6);
+
+    if (
+        coincidencias.length === 0
+    ) {
+
+        resultadosClienteVenta.innerHTML =
+            '<div class="resultado-buscador-vacio">No se encontraron clientes</div>';
+
+        resultadosClienteVenta.hidden =
+            false;
+
+        return;
+
+    }
+
+    resultadosClienteVenta.innerHTML =
+        '';
+
+    coincidencias.forEach(cliente => {
+
+        const boton =
+            document.createElement('button');
+
+        boton.type =
+            'button';
+
+        boton.className =
+            'resultado-buscador-item';
+
+        boton.innerHTML =
+            '<strong>' +
+                escaparHtml(cliente.nombre) +
+            '</strong>' +
+            (
+                cliente.rut
+                    ? '<span>' +
+                        escaparHtml(cliente.rut) +
+                      '</span>'
+                    : ''
+            );
+
+        boton.addEventListener(
+            'click',
+            () => {
+
+                clienteSelect.value =
+                    String(
+                        cliente.id_cliente
+                    );
+
+                buscarClienteVenta.value =
+                    cliente.rut
+                        ? cliente.nombre +
+                            ' - ' +
+                            cliente.rut
+                        : cliente.nombre;
+
+                resultadosClienteVenta.hidden =
+                    true;
+
+                resultadosClienteVenta.innerHTML =
+                    '';
+
+            }
+        );
+
+        resultadosClienteVenta.appendChild(
+            boton
+        );
+
+    });
+
+    resultadosClienteVenta.hidden =
+        false;
+
+}
+
+
 buscarClienteVenta.addEventListener(
     'input',
-    mostrarClientes
+    mostrarResultadosClienteVenta
 );
 
 
@@ -379,16 +503,163 @@ async function cargarOpcionesVenta() {
 }
 
 
-buscarProductoVenta.addEventListener(
-    'input',
-    () => {
+function mostrarResultadosProductoVenta() {
 
-        productoSelect.value =
+    const texto =
+        buscarProductoVenta.value
+            .trim()
+            .toLowerCase();
+
+    productoSelect.value =
+        '';
+
+    reiniciarSelectoresVariante();
+
+    mostrarProductos();
+
+    if (!texto) {
+
+        resultadosProductoVenta.hidden =
+            true;
+
+        resultadosProductoVenta.innerHTML =
             '';
 
-        reiniciarSelectoresVariante();
+        return;
 
-        mostrarProductos();
+    }
+
+    const coincidencias =
+        productosDisponibles()
+            .filter(
+                producto =>
+                    producto
+                        .toLowerCase()
+                        .includes(texto)
+            )
+            .slice(0, 6);
+
+    if (
+        coincidencias.length === 0
+    ) {
+
+        resultadosProductoVenta.innerHTML =
+            '<div class="resultado-buscador-vacio">No se encontraron productos disponibles</div>';
+
+        resultadosProductoVenta.hidden =
+            false;
+
+        return;
+
+    }
+
+    resultadosProductoVenta.innerHTML =
+        '';
+
+    coincidencias.forEach(producto => {
+
+        const boton =
+            document.createElement('button');
+
+        boton.type =
+            'button';
+
+        boton.className =
+            'resultado-buscador-item';
+
+        const opcionesProducto =
+            opcionesVenta.filter(
+                item =>
+                    item.producto ===
+                        producto &&
+                    (
+                        !sucursalVenta ||
+                        item.sucursal ===
+                            sucursalVenta
+                    )
+            );
+
+        const stockTotal =
+            opcionesProducto.reduce(
+                (total, item) =>
+                    total +
+                    Number(
+                        item.stock_actual
+                    ),
+                0
+            );
+
+        boton.innerHTML =
+            '<strong>' +
+                escaparHtml(producto) +
+            '</strong>' +
+            '<span>' +
+                stockTotal +
+                ' unidades disponibles' +
+            '</span>';
+
+        boton.addEventListener(
+            'click',
+            () => {
+
+                buscarProductoVenta.value =
+                    producto;
+
+                mostrarProductos();
+
+                productoSelect.value =
+                    producto;
+
+                resultadosProductoVenta.hidden =
+                    true;
+
+                resultadosProductoVenta.innerHTML =
+                    '';
+
+                productoSelect.dispatchEvent(
+                    new Event(
+                        'change'
+                    )
+                );
+
+            }
+        );
+
+        resultadosProductoVenta.appendChild(
+            boton
+        );
+
+    });
+
+    resultadosProductoVenta.hidden =
+        false;
+
+}
+
+
+buscarProductoVenta.addEventListener(
+    'input',
+    mostrarResultadosProductoVenta
+);
+
+
+document.addEventListener(
+    'click',
+    event => {
+
+        if (
+            !event.target.closest(
+                '.buscador-venta'
+            )
+        ) {
+
+            resultadosClienteVenta.hidden =
+                true;
+
+            resultadosProductoVenta.hidden =
+                true;
+
+        }
 
     }
 );
