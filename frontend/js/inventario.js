@@ -1,1 +1,227 @@
-const tablaInventario = document.getElementById('tablaInventario');\nconst editarInventarioSection = document.getElementById('editarInventarioSection');\nconst editarInventarioForm = document.getElementById('editarInventarioForm');\nconst inventarioSeleccionado = document.getElementById('inventarioSeleccionado');\nconst editarStockActual = document.getElementById('editarStockActual');\nconst editarStockMinimo = document.getElementById('editarStockMinimo');\nconst cancelarInventario = document.getElementById('cancelarInventario');\nconst mensajeInventario = document.getElementById('mensajeInventario');\nconst buscarInventario = document.getElementById('buscarInventario');\nconst filtroSucursal = document.getElementById('filtroSucursal');\nconst filtroEstado = document.getElementById('filtroEstado');\nconst limpiarFiltrosInventario = document.getElementById('limpiarFiltrosInventario');\nconst contadorInventario = document.getElementById('contadorInventario');\n\nlet inventarioEditandoId = null;\nlet usuarioActual = null;\nlet inventarioCompleto = [];\n\nfunction escaparHtml(valor) {\n    return String(valor ?? '')\n        .replaceAll('&', '&amp;')\n        .replaceAll('<', '&lt;')\n        .replaceAll('>', '&gt;')\n        .replaceAll('"', '&quot;')\n        .replaceAll("'", '&#039;');\n}\n\nfunction obtenerEstado(item) {\n    if (Number(item.stock_actual) === 0) return 'Sin stock';\n    if (item.stock_minimo !== null && Number(item.stock_actual) <= Number(item.stock_minimo)) return 'Stock bajo';\n    return 'Disponible';\n}\n\nfunction obtenerClaseEstado(estado) {\n    if (estado === 'Sin stock') return 'estado-sin-stock';\n    if (estado === 'Stock bajo') return 'estado-stock-bajo';\n    return 'estado-disponible';\n}\n\nasync function cargarUsuario() {\n    try {\n        const respuesta = await fetch('/api/auth/me', { credentials: 'include' });\n        if (!respuesta.ok) {\n            window.location.href = 'index.html';\n            return false;\n        }\n        const datos = await respuesta.json();\n        usuarioActual = datos.usuario;\n        return true;\n    } catch (error) {\n        console.error('Error al obtener usuario:', error);\n        window.location.href = 'index.html';\n        return false;\n    }\n}\n\nfunction cargarSucursalesFiltro() {\n    const valorActual = filtroSucursal.value;\n    const sucursales = [...new Set(inventarioCompleto.map(item => item.sucursal))].sort();\n    filtroSucursal.innerHTML = '<option value="">Todas las sucursales</option>';\n    sucursales.forEach(sucursal => {\n        const opcion = document.createElement('option');\n        opcion.value = sucursal;\n        opcion.textContent = sucursal;\n        filtroSucursal.appendChild(opcion);\n    });\n    if (sucursales.includes(valorActual)) filtroSucursal.value = valorActual;\n}\n\nfunction aplicarFiltros() {\n    const texto = buscarInventario.value.trim().toLowerCase();\n    const sucursal = filtroSucursal.value;\n    const estado = filtroEstado.value;\n\n    const filtrado = inventarioCompleto.filter(item => {\n        const coincideTexto =\n            !texto ||\n            String(item.producto).toLowerCase().includes(texto) ||\n            String(item.color).toLowerCase().includes(texto) ||\n            String(item.talla).toLowerCase().includes(texto);\n\n        const coincideSucursal = !sucursal || item.sucursal === sucursal;\n        const coincideEstado = !estado || obtenerEstado(item) === estado;\n\n        return coincideTexto && coincideSucursal && coincideEstado;\n    });\n\n    mostrarInventario(filtrado);\n}\n\nfunction mostrarInventario(inventario) {\n    tablaInventario.innerHTML = '';\n    contadorInventario.textContent = 'Mostrando ' + inventario.length + ' de ' + inventarioCompleto.length + ' registros';\n\n    if (inventario.length === 0) {\n        tablaInventario.innerHTML = '<tr><td colspan="8" class="sin-resultados">No hay registros que coincidan con los filtros seleccionados.</td></tr>';\n        return;\n    }\n\n    const esAdmin = usuarioActual && usuarioActual.rol === 'administrador';\n\n    inventario.forEach(item => {\n        const estado = obtenerEstado(item);\n        const claseEstado = obtenerClaseEstado(estado);\n        const fila = document.createElement('tr');\n\n        if (estado === 'Sin stock') fila.classList.add('fila-sin-stock');\n        else if (estado === 'Stock bajo') fila.classList.add('fila-stock-bajo');\n\n        let acciones = '-';\n        if (esAdmin) {\n            acciones = '<button class="boton-editar-inventario" type="button">Editar</button>';\n        }\n\n        fila.innerHTML =\n            '<td>' + escaparHtml(item.producto) + '</td>' +\n            '<td>' + escaparHtml(item.color) + '</td>' +\n            '<td>' + escaparHtml(item.talla) + '</td>' +\n            '<td>' + escaparHtml(item.sucursal) + '</td>' +\n            '<td>' + item.stock_actual + '</td>' +\n            '<td>' + (item.stock_minimo === null ? '-' : item.stock_minimo) + '</td>' +\n            '<td><span class="estado-stock ' + claseEstado + '">' + estado + '</span></td>' +\n            '<td>' + acciones + '</td>';\n\n        tablaInventario.appendChild(fila);\n\n        if (!esAdmin) return;\n\n        const botonEditar = fila.querySelector('.boton-editar-inventario');\n        botonEditar.addEventListener('click', () => {\n            inventarioEditandoId = item.id_inventario;\n            inventarioSeleccionado.textContent = item.producto + ' / ' + item.color + ' / ' + item.talla + ' / ' + item.sucursal;\n            editarStockActual.value = item.stock_actual;\n            editarStockMinimo.value = item.stock_minimo === null ? '' : item.stock_minimo;\n            mensajeInventario.textContent = '';\n            editarInventarioSection.hidden = false;\n            editarInventarioSection.scrollIntoView({ behavior: 'smooth' });\n        });\n    });\n}\n\nasync function cargarInventario() {\n    try {\n        const respuesta = await fetch('/api/inventario', { credentials: 'include' });\n        if (respuesta.status === 401) {\n            window.location.href = 'index.html';\n            return;\n        }\n\n        const inventario = await respuesta.json();\n        if (!respuesta.ok) {\n            console.error(inventario.mensaje);\n            return;\n        }\n\n        inventarioCompleto = inventario;\n        cargarSucursalesFiltro();\n        aplicarFiltros();\n    } catch (error) {\n        console.error('Error al cargar inventario:', error);\n    }\n}\n\nbuscarInventario.addEventListener('input', aplicarFiltros);\nfiltroSucursal.addEventListener('change', aplicarFiltros);\nfiltroEstado.addEventListener('change', aplicarFiltros);\n\nlimpiarFiltrosInventario.addEventListener('click', () => {\n    buscarInventario.value = '';\n    filtroSucursal.value = '';\n    filtroEstado.value = '';\n    aplicarFiltros();\n});\n\neditarInventarioForm.addEventListener('submit', async event => {\n    event.preventDefault();\n\n    if (!usuarioActual || usuarioActual.rol !== 'administrador') {\n        mensajeInventario.textContent = 'No tiene permisos para editar inventario';\n        return;\n    }\n\n    if (!inventarioEditandoId) return;\n\n    const datos = {\n        stock_actual: Number(editarStockActual.value),\n        stock_minimo: editarStockMinimo.value\n    };\n\n    try {\n        const respuesta = await fetch('/api/inventario/' + inventarioEditandoId, {\n            method: 'PATCH',\n            credentials: 'include',\n            headers: { 'Content-Type': 'application/json' },\n            body: JSON.stringify(datos)\n        });\n\n        const resultado = await respuesta.json();\n        mensajeInventario.textContent = resultado.mensaje;\n\n        if (respuesta.ok) {\n            inventarioEditandoId = null;\n            editarInventarioSection.hidden = true;\n            editarInventarioForm.reset();\n            await cargarInventario();\n        }\n    } catch (error) {\n        console.error('Error al actualizar inventario:', error);\n        mensajeInventario.textContent = 'Error al actualizar inventario';\n    }\n});\n\ncancelarInventario.addEventListener('click', () => {\n    inventarioEditandoId = null;\n    editarInventarioSection.hidden = true;\n    editarInventarioForm.reset();\n    mensajeInventario.textContent = '';\n});\n\nasync function iniciar() {\n    editarInventarioSection.hidden = true;\n    const autenticado = await cargarUsuario();\n    if (!autenticado) return;\n    await cargarInventario();\n}\n\niniciar();\n
+const tablaInventario = document.getElementById('tablaInventario');
+const editarInventarioSection = document.getElementById('editarInventarioSection');
+const editarInventarioForm = document.getElementById('editarInventarioForm');
+const inventarioSeleccionado = document.getElementById('inventarioSeleccionado');
+const editarStockActual = document.getElementById('editarStockActual');
+const editarStockMinimo = document.getElementById('editarStockMinimo');
+const cancelarInventario = document.getElementById('cancelarInventario');
+const mensajeInventario = document.getElementById('mensajeInventario');
+const buscarInventario = document.getElementById('buscarInventario');
+const filtroSucursal = document.getElementById('filtroSucursal');
+const filtroEstado = document.getElementById('filtroEstado');
+const limpiarFiltrosInventario = document.getElementById('limpiarFiltrosInventario');
+const contadorInventario = document.getElementById('contadorInventario');
+
+let inventarioEditandoId = null;
+let usuarioActual = null;
+let inventarioCompleto = [];
+
+function escaparHtml(valor) {
+    return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function obtenerEstado(item) {
+    if (Number(item.stock_actual) === 0) return 'Sin stock';
+    if (item.stock_minimo !== null && Number(item.stock_actual) <= Number(item.stock_minimo)) return 'Stock bajo';
+    return 'Disponible';
+}
+
+function obtenerClaseEstado(estado) {
+    if (estado === 'Sin stock') return 'estado-sin-stock';
+    if (estado === 'Stock bajo') return 'estado-stock-bajo';
+    return 'estado-disponible';
+}
+
+async function cargarUsuario() {
+    try {
+        const respuesta = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!respuesta.ok) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        const datos = await respuesta.json();
+        usuarioActual = datos.usuario;
+        return true;
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        window.location.href = 'index.html';
+        return false;
+    }
+}
+
+function cargarSucursalesFiltro() {
+    const valorActual = filtroSucursal.value;
+    const sucursales = [...new Set(inventarioCompleto.map(item => item.sucursal))].sort();
+    filtroSucursal.innerHTML = '<option value="">Todas las sucursales</option>';
+    sucursales.forEach(sucursal => {
+        const opcion = document.createElement('option');
+        opcion.value = sucursal;
+        opcion.textContent = sucursal;
+        filtroSucursal.appendChild(opcion);
+    });
+    if (sucursales.includes(valorActual)) filtroSucursal.value = valorActual;
+}
+
+function aplicarFiltros() {
+    const texto = buscarInventario.value.trim().toLowerCase();
+    const sucursal = filtroSucursal.value;
+    const estado = filtroEstado.value;
+
+    const filtrado = inventarioCompleto.filter(item => {
+        const coincideTexto =
+            !texto ||
+            String(item.producto).toLowerCase().includes(texto) ||
+            String(item.color).toLowerCase().includes(texto) ||
+            String(item.talla).toLowerCase().includes(texto);
+
+        const coincideSucursal = !sucursal || item.sucursal === sucursal;
+        const coincideEstado = !estado || obtenerEstado(item) === estado;
+
+        return coincideTexto && coincideSucursal && coincideEstado;
+    });
+
+    mostrarInventario(filtrado);
+}
+
+function mostrarInventario(inventario) {
+    tablaInventario.innerHTML = '';
+    contadorInventario.textContent = 'Mostrando ' + inventario.length + ' de ' + inventarioCompleto.length + ' registros';
+
+    if (inventario.length === 0) {
+        tablaInventario.innerHTML = '<tr><td colspan="8" class="sin-resultados">No hay registros que coincidan con los filtros seleccionados.</td></tr>';
+        return;
+    }
+
+    const esAdmin = usuarioActual && usuarioActual.rol === 'administrador';
+
+    inventario.forEach(item => {
+        const estado = obtenerEstado(item);
+        const claseEstado = obtenerClaseEstado(estado);
+        const fila = document.createElement('tr');
+
+        if (estado === 'Sin stock') fila.classList.add('fila-sin-stock');
+        else if (estado === 'Stock bajo') fila.classList.add('fila-stock-bajo');
+
+        let acciones = '-';
+        if (esAdmin) {
+            acciones = '<button class="boton-editar-inventario" type="button">Editar</button>';
+        }
+
+        fila.innerHTML =
+            '<td>' + escaparHtml(item.producto) + '</td>' +
+            '<td>' + escaparHtml(item.color) + '</td>' +
+            '<td>' + escaparHtml(item.talla) + '</td>' +
+            '<td>' + escaparHtml(item.sucursal) + '</td>' +
+            '<td>' + item.stock_actual + '</td>' +
+            '<td>' + (item.stock_minimo === null ? '-' : item.stock_minimo) + '</td>' +
+            '<td><span class="estado-stock ' + claseEstado + '">' + estado + '</span></td>' +
+            '<td>' + acciones + '</td>';
+
+        tablaInventario.appendChild(fila);
+
+        if (!esAdmin) return;
+
+        const botonEditar = fila.querySelector('.boton-editar-inventario');
+        botonEditar.addEventListener('click', () => {
+            inventarioEditandoId = item.id_inventario;
+            inventarioSeleccionado.textContent = item.producto + ' / ' + item.color + ' / ' + item.talla + ' / ' + item.sucursal;
+            editarStockActual.value = item.stock_actual;
+            editarStockMinimo.value = item.stock_minimo === null ? '' : item.stock_minimo;
+            mensajeInventario.textContent = '';
+            editarInventarioSection.hidden = false;
+            editarInventarioSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+}
+
+async function cargarInventario() {
+    try {
+        const respuesta = await fetch('/api/inventario', { credentials: 'include' });
+        if (respuesta.status === 401) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const inventario = await respuesta.json();
+        if (!respuesta.ok) {
+            console.error(inventario.mensaje);
+            return;
+        }
+
+        inventarioCompleto = inventario;
+        cargarSucursalesFiltro();
+        aplicarFiltros();
+    } catch (error) {
+        console.error('Error al cargar inventario:', error);
+    }
+}
+
+buscarInventario.addEventListener('input', aplicarFiltros);
+filtroSucursal.addEventListener('change', aplicarFiltros);
+filtroEstado.addEventListener('change', aplicarFiltros);
+
+limpiarFiltrosInventario.addEventListener('click', () => {
+    buscarInventario.value = '';
+    filtroSucursal.value = '';
+    filtroEstado.value = '';
+    aplicarFiltros();
+});
+
+editarInventarioForm.addEventListener('submit', async event => {
+    event.preventDefault();
+
+    if (!usuarioActual || usuarioActual.rol !== 'administrador') {
+        mensajeInventario.textContent = 'No tiene permisos para editar inventario';
+        return;
+    }
+
+    if (!inventarioEditandoId) return;
+
+    const datos = {
+        stock_actual: Number(editarStockActual.value),
+        stock_minimo: editarStockMinimo.value
+    };
+
+    try {
+        const respuesta = await fetch('/api/inventario/' + inventarioEditandoId, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        const resultado = await respuesta.json();
+        mensajeInventario.textContent = resultado.mensaje;
+
+        if (respuesta.ok) {
+            inventarioEditandoId = null;
+            editarInventarioSection.hidden = true;
+            editarInventarioForm.reset();
+            await cargarInventario();
+        }
+    } catch (error) {
+        console.error('Error al actualizar inventario:', error);
+        mensajeInventario.textContent = 'Error al actualizar inventario';
+    }
+});
+
+cancelarInventario.addEventListener('click', () => {
+    inventarioEditandoId = null;
+    editarInventarioSection.hidden = true;
+    editarInventarioForm.reset();
+    mensajeInventario.textContent = '';
+});
+
+async function iniciar() {
+    editarInventarioSection.hidden = true;
+    const autenticado = await cargarUsuario();
+    if (!autenticado) return;
+    await cargarInventario();
+}
+
+iniciar();
