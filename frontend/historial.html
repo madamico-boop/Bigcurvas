@@ -30,53 +30,225 @@
     <main class="dashboard">
 
         <h1>Historial de ventas</h1>
-        <p>Ventas registradas en el sistema</p>
+        <p>Consulta y revisión de las ventas registradas en el sistema.</p>
 
-        <table class="inventory-table">
+        <section class="filtros-historial">
 
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Sucursal</th>
-                    <th>Canal</th>
-                    <th>Estado</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <div class="campo-filtro campo-filtro-busqueda">
+                <label for="buscarVenta">
+                    Buscar venta
+                </label>
 
-            <tbody id="tablaVentas">
-            </tbody>
+                <input
+                    type="search"
+                    id="buscarVenta"
+                    placeholder="N° de venta o cliente"
+                    autocomplete="off"
+                >
+            </div>
 
-        </table>
+            <div class="campo-filtro">
+                <label for="filtroDesde">
+                    Desde
+                </label>
+
+                <input
+                    type="date"
+                    id="filtroDesde"
+                >
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroHasta">
+                    Hasta
+                </label>
+
+                <input
+                    type="date"
+                    id="filtroHasta"
+                >
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroSucursalHistorial">
+                    Sucursal
+                </label>
+
+                <select id="filtroSucursalHistorial">
+                    <option value="">
+                        Todas las sucursales
+                    </option>
+                </select>
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroClienteHistorial">
+                    Cliente
+                </label>
+
+                <select id="filtroClienteHistorial">
+                    <option value="">
+                        Todos los clientes
+                    </option>
+                </select>
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroCanalHistorial">
+                    Canal
+                </label>
+
+                <select id="filtroCanalHistorial">
+                    <option value="">
+                        Todos los canales
+                    </option>
+                    <option value="Local">
+                        Local
+                    </option>
+                    <option value="Online">
+                        Online
+                    </option>
+                </select>
+            </div>
+
+            <button
+                type="button"
+                id="limpiarFiltrosHistorial"
+                class="boton-secundario"
+            >
+                Limpiar filtros
+            </button>
+
+        </section>
 
 
-        <section
-            id="detalleVentaSection"
-            class="productos-grid"
-            hidden
-        >
+        <section class="resumen-historial">
 
-            <h2>Detalle de venta</h2>
+            <div class="resumen-historial-card">
+                <span>Ventas encontradas</span>
+                <strong id="cantidadVentasHistorial">
+                    0
+                </strong>
+            </div>
+
+            <div class="resumen-historial-card">
+                <span>Total vendido</span>
+                <strong id="totalHistorial">
+                    $0
+                </strong>
+            </div>
+
+        </section>
+
+
+        <div class="tabla-responsive">
 
             <table class="inventory-table">
 
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Color</th>
-                        <th>Talla</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>Subtotal</th>
+                        <th>N° venta</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Sucursal</th>
+                        <th>Canal</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
 
-                <tbody id="tablaDetalleVenta">
+                <tbody id="tablaVentas">
                 </tbody>
 
             </table>
+
+        </div>
+
+
+        <section
+            id="detalleVentaSection"
+            class="detalle-venta-card"
+            hidden
+        >
+
+            <div class="detalle-venta-header">
+
+                <div>
+                    <h2>Detalle de venta</h2>
+                    <p id="resumenDetalleVenta"></p>
+                </div>
+
+                <button
+                    type="button"
+                    id="cerrarDetalleVenta"
+                    class="boton-secundario"
+                >
+                    Cerrar
+                </button>
+
+            </div>
+
+            <div class="detalle-venta-datos">
+
+                <div>
+                    <span>Cliente</span>
+                    <strong id="detalleCliente">
+                        -
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Sucursal</span>
+                    <strong id="detalleSucursal">
+                        -
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Canal</span>
+                    <strong id="detalleCanal">
+                        -
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Estado</span>
+                    <strong id="detalleEstado">
+                        -
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="tabla-responsive">
+
+                <table class="inventory-table tabla-detalle-venta">
+
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaDetalleVenta">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="detalle-venta-total">
+                <span>Total de la venta</span>
+                <strong id="detalleTotal">
+                    $0
+                </strong>
+            </div>
 
         </section>
 
