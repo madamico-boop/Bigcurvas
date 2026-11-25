@@ -1254,3 +1254,200 @@ form {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================================
+   REGISTRO DE VENTAS
+========================================= */
+
+.venta-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 24px;
+}
+
+.venta-panel,
+.carrito-venta {
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-suave);
+}
+
+.venta-panel {
+    padding: 25px;
+}
+
+.venta-panel h2 {
+    margin-bottom: 8px;
+    font-size: 19px;
+}
+
+.venta-panel label {
+    display: block;
+}
+
+.venta-panel input,
+.venta-panel select {
+    margin-bottom: 7px;
+}
+
+.venta-campos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.venta-resumen-sucursal {
+    margin-top: 22px;
+    padding: 14px 16px;
+    background-color: var(--color-principal-suave);
+    border-radius: 9px;
+}
+
+.venta-resumen-sucursal span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-texto-secundario);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.venta-resumen-sucursal strong {
+    color: var(--color-principal-hover);
+    font-size: 14px;
+}
+
+.stock-disponible-venta {
+    margin: 15px 0 4px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: #eef7f1;
+    color: #2f6b46;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.stock-disponible-venta.stock-agotado {
+    background-color: #fbe7e7;
+    color: #9a3636;
+}
+
+.cantidad-selector {
+    display: grid;
+    grid-template-columns: 44px minmax(70px, 1fr) 44px;
+    gap: 8px;
+    align-items: center;
+}
+
+.cantidad-selector input {
+    margin: 0;
+    text-align: center;
+}
+
+.cantidad-selector button {
+    height: 44px;
+    padding: 0;
+    font-size: 20px;
+}
+
+.boton-agregar-venta {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.carrito-venta {
+    margin-top: 26px;
+    padding: 24px;
+}
+
+.carrito-venta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.carrito-venta-header h2 {
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.carrito-venta-header h3 {
+    color: var(--color-principal);
+    white-space: nowrap;
+}
+
+.tabla-carrito {
+    margin-top: 18px;
+}
+
+.cantidad-carrito {
+    display: inline-grid;
+    grid-template-columns: 30px 34px 30px;
+    gap: 4px;
+    align-items: center;
+}
+
+.cantidad-carrito strong {
+    text-align: center;
+}
+
+.cantidad-carrito button {
+    width: 30px !important;
+    height: 30px;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 7px;
+}
+
+.eliminar-item {
+    background-color: #81787d;
+}
+
+.eliminar-item:hover {
+    background-color: #6c6468;
+}
+
+.acciones-confirmar-venta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.acciones-confirmar-venta button {
+    min-width: 150px;
+}
+
+@media (max-width: 1000px) {
+    .venta-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .venta-campos-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .carrito-venta {
+        padding: 18px;
+    }
+
+    .carrito-venta-header {
+        flex-direction: column;
+    }
+
+    .acciones-confirmar-venta {
+        flex-direction: column;
+    }
+
+    .acciones-confirmar-venta button {
+        width: 100%;
+    }
+}
