@@ -1222,3 +1222,35 @@ form {
         width: 100%;
     }
 }
+
+/* =========================================
+   FORMULARIOS DE PRODUCTOS EN DOS COLUMNAS
+========================================= */
+
+.admin-productos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px;
+    align-items: start;
+    margin-top: 28px;
+    margin-bottom: 38px;
+}
+
+.admin-productos-grid .productos-grid {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.admin-productos-grid .producto-form-container {
+    max-width: none;
+}
+
+.admin-productos-grid .venta-form {
+    max-width: none;
+}
+
+@media (max-width: 820px) {
+    .admin-productos-grid {
+        grid-template-columns: 1fr;
+    }
+}
