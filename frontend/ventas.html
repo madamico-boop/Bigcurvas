@@ -28,142 +28,253 @@
     <main class="dashboard">
 
         <h1>Registrar venta</h1>
-        <p>Agregue uno o más productos a la venta</p>
+        <p>Agregue uno o más productos y confirme la venta.</p>
+
+        <section class="venta-layout">
+
+            <div class="venta-panel">
+
+                <h2>Datos de la venta</h2>
+
+                <label for="buscarClienteVenta">
+                    Buscar cliente
+                </label>
+
+                <input
+                    type="search"
+                    id="buscarClienteVenta"
+                    placeholder="Nombre o RUT"
+                    autocomplete="off"
+                >
+
+                <label for="cliente">
+                    Cliente (opcional)
+                </label>
+
+                <select id="cliente">
+                    <option value="">
+                        Venta sin cliente
+                    </option>
+                </select>
+
+                <label for="canalVenta">
+                    Canal de venta
+                </label>
+
+                <select id="canalVenta">
+                    <option value="Local">Local</option>
+                    <option value="Online">Online</option>
+                </select>
+
+                <div class="venta-resumen-sucursal">
+                    <span>Sucursal de la venta</span>
+                    <strong id="sucursalVentaResumen">
+                        Se define al agregar el primer producto
+                    </strong>
+                </div>
+
+            </div>
 
 
-        <!-- CLIENTE -->
-
-        <div class="venta-form">
-
-            <label for="cliente">
-                Cliente (opcional)
-            </label>
-
-            <select id="cliente">
-                <option value="">
-                    Venta sin cliente
-                </option>
-            </select>
-
-        </div>
-
-
-        <!-- AGREGAR PRODUCTO -->
-
-        <form id="ventaForm" class="venta-form">
-
-            <h2>Agregar producto</h2>
-
-            <label for="producto">
-                Producto
-            </label>
-
-            <select id="producto" required>
-                <option value="">
-                    Seleccione un producto
-                </option>
-            </select>
-
-
-            <label for="color">
-                Color
-            </label>
-
-            <select id="color" required disabled>
-                <option value="">
-                    Seleccione un color
-                </option>
-            </select>
-
-
-            <label for="talla">
-                Talla
-            </label>
-
-            <select id="talla" required disabled>
-                <option value="">
-                    Seleccione una talla
-                </option>
-            </select>
-
-
-            <label for="sucursal">
-                Sucursal
-            </label>
-
-            <select id="sucursal" required disabled>
-                <option value="">
-                    Seleccione una sucursal
-                </option>
-            </select>
-
-
-            <p id="stockDisponible">
-                Stock disponible: -
-            </p>
-
-
-            <label for="cantidad">
-                Cantidad
-            </label>
-
-            <input
-                type="number"
-                id="cantidad"
-                min="1"
-                required
+            <form
+                id="ventaForm"
+                class="venta-panel"
             >
 
+                <h2>Agregar producto</h2>
 
-            <button type="submit">
-                Agregar a la venta
-            </button>
+                <label for="buscarProductoVenta">
+                    Buscar producto
+                </label>
 
-        </form>
+                <input
+                    type="search"
+                    id="buscarProductoVenta"
+                    placeholder="Escriba el nombre"
+                    autocomplete="off"
+                >
 
+                <label for="producto">
+                    Producto
+                </label>
 
-        <!-- CARRITO -->
-
-        <h2 class="titulo-tabla">
-            Productos de la venta
-        </h2>
-
-        <table class="inventory-table">
-
-            <thead>
-
-                <tr>
-                    <th>Producto</th>
-                    <th>Color</th>
-                    <th>Talla</th>
-                    <th>Sucursal</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
-                    <th>Acción</th>
-                </tr>
-
-            </thead>
-
-            <tbody id="tablaCarrito">
-            </tbody>
-
-        </table>
+                <select id="producto" required>
+                    <option value="">
+                        Seleccione un producto
+                    </option>
+                </select>
 
 
-        <h3 id="totalVenta">
-            Total: $0
-        </h3>
+                <div class="venta-campos-grid">
+
+                    <div>
+                        <label for="color">
+                            Color
+                        </label>
+
+                        <select
+                            id="color"
+                            required
+                            disabled
+                        >
+                            <option value="">
+                                Seleccione un color
+                            </option>
+                        </select>
+                    </div>
 
 
-        <button
-            type="button"
-            id="confirmarVenta"
-        >
-            Confirmar venta
-        </button>
+                    <div>
+                        <label for="talla">
+                            Talla
+                        </label>
+
+                        <select
+                            id="talla"
+                            required
+                            disabled
+                        >
+                            <option value="">
+                                Seleccione una talla
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
 
 
-        <p id="mensajeVenta"></p>
+                <label for="sucursal">
+                    Sucursal
+                </label>
+
+                <select
+                    id="sucursal"
+                    required
+                    disabled
+                >
+                    <option value="">
+                        Seleccione una sucursal
+                    </option>
+                </select>
+
+
+                <div
+                    id="stockDisponible"
+                    class="stock-disponible-venta"
+                >
+                    Stock disponible: -
+                </div>
+
+
+                <label for="cantidad">
+                    Cantidad
+                </label>
+
+                <div class="cantidad-selector">
+                    <button
+                        type="button"
+                        id="disminuirCantidadSeleccion"
+                        aria-label="Disminuir cantidad"
+                    >
+                        −
+                    </button>
+
+                    <input
+                        type="number"
+                        id="cantidad"
+                        min="1"
+                        value="1"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        id="aumentarCantidadSeleccion"
+                        aria-label="Aumentar cantidad"
+                    >
+                        +
+                    </button>
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="boton-agregar-venta"
+                >
+                    Agregar a la venta
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <section class="carrito-venta">
+
+            <div class="carrito-venta-header">
+
+                <div>
+                    <h2>Productos de la venta</h2>
+                    <p id="resumenCarrito">
+                        No hay productos agregados
+                    </p>
+                </div>
+
+                <h3 id="totalVenta">
+                    Total: $0
+                </h3>
+
+            </div>
+
+
+            <div class="tabla-responsive">
+
+                <table class="inventory-table tabla-carrito">
+
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>Sucursal</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaCarrito">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="acciones-confirmar-venta">
+
+                <button
+                    type="button"
+                    id="vaciarCarrito"
+                    class="boton-secundario"
+                    disabled
+                >
+                    Vaciar carrito
+                </button>
+
+                <button
+                    type="button"
+                    id="confirmarVenta"
+                    disabled
+                >
+                    Confirmar venta
+                </button>
+
+            </div>
+
+            <p id="mensajeVenta"></p>
+
+        </section>
 
     </main>
 
