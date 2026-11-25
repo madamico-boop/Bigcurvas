@@ -1012,3 +1012,107 @@ form {
     }
 
 }
+/* =========================================
+   FILTROS DE INVENTARIO
+========================================= */
+
+.filtros-inventario {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+    margin: 24px 0 12px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-suave);
+}
+
+.campo-filtro {
+    min-width: 0;
+}
+
+.campo-filtro label {
+    display: block;
+    margin-top: 0;
+}
+
+.boton-secundario {
+    background-color: #81787d;
+    white-space: nowrap;
+}
+
+.boton-secundario:hover {
+    background-color: #6c6468;
+}
+
+.contador-resultados {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--color-texto-secundario);
+}
+
+.estado-stock {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.estado-disponible {
+    color: #2f6b46;
+    background-color: #e7f4ec;
+}
+
+.estado-stock-bajo {
+    color: #8a5a12;
+    background-color: #fff3d8;
+}
+
+.estado-sin-stock {
+    color: #9a3636;
+    background-color: #fbe7e7;
+}
+
+.fila-stock-bajo td {
+    background-color: #fffdf7;
+}
+
+.fila-sin-stock td {
+    background-color: #fff9f9;
+}
+
+.sin-resultados {
+    text-align: center !important;
+    padding: 28px !important;
+    color: var(--color-texto-secundario);
+}
+
+@media (max-width: 1000px) {
+    .filtros-inventario {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .campo-filtro-busqueda {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 650px) {
+    .filtros-inventario {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .campo-filtro-busqueda {
+        grid-column: auto;
+    }
+
+    .filtros-inventario .boton-secundario {
+        width: 100%;
+    }
+}
