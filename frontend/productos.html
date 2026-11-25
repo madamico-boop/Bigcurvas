@@ -398,43 +398,104 @@
             Productos registrados
         </h2>
 
+        <section class="filtros-productos">
+
+            <div class="campo-filtro campo-filtro-busqueda">
+                <label for="buscarProducto">Buscar</label>
+                <input
+                    type="search"
+                    id="buscarProducto"
+                    placeholder="Nombre del producto"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroCategoriaProducto">Categoría</label>
+                <select id="filtroCategoriaProducto">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+
+            <div class="campo-filtro">
+                <label for="filtroEstadoProducto">Estado</label>
+                <select id="filtroEstadoProducto">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </div>
+
+            <button
+                type="button"
+                id="limpiarFiltrosProductos"
+                class="boton-secundario"
+            >
+                Limpiar filtros
+            </button>
+
+        </section>
+
+        <p
+            id="contadorProductos"
+            class="contador-resultados"
+        ></p>
 
         <table class="inventory-table">
 
             <thead>
-
                 <tr>
-
-                    <th>
-                        Producto
-                    </th>
-
-                    <th>
-                        Categoría
-                    </th>
-
-                    <th>
-                        Precio
-                    </th>
-
-                    <th>
-                        Estado
-                    </th>
-
-                    <th>
-                        Acciones
-                    </th>
-
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Variantes</th>
+                    <th>Acciones</th>
                 </tr>
-
             </thead>
-
 
             <tbody id="tablaProductos">
             </tbody>
 
         </table>
 
+        <section
+            id="variantesProductoSection"
+            class="grafico-card variantes-producto-section"
+            hidden
+        >
+            <div class="variantes-producto-header">
+                <div>
+                    <h2>Variantes del producto</h2>
+                    <p id="productoVariantesSeleccionado"></p>
+                </div>
+
+                <button
+                    type="button"
+                    id="cerrarVariantesProducto"
+                    class="boton-secundario"
+                >
+                    Cerrar
+                </button>
+            </div>
+
+            <div class="tabla-responsive">
+                <table class="inventory-table tabla-variantes-producto">
+                    <thead>
+                        <tr>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>SKU</th>
+                            <th>Stock Rancagua</th>
+                            <th>Stock Bodega</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaVariantesProducto">
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
 
