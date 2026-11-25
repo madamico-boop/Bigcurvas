@@ -1451,3 +1451,65 @@ form {
         width: 100%;
     }
 }
+
+/* =========================================
+   BUSCADORES DE VENTAS
+========================================= */
+
+.buscador-venta {
+    position: relative;
+}
+
+.resultados-buscador-venta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% - 2px);
+    z-index: 20;
+    overflow: hidden;
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 10px 25px rgba(44, 35, 40, 0.12);
+}
+
+.resultado-buscador-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin: 0;
+    padding: 11px 13px;
+    border-radius: 0;
+    background-color: white;
+    color: var(--color-texto);
+    box-shadow: none;
+    text-align: left;
+}
+
+.resultado-buscador-item + .resultado-buscador-item {
+    border-top: 1px solid #eee9eb;
+}
+
+.resultado-buscador-item:hover {
+    background-color: var(--color-principal-suave);
+    color: var(--color-texto);
+    box-shadow: none;
+}
+
+.resultado-buscador-item strong {
+    font-size: 14px;
+}
+
+.resultado-buscador-item span {
+    margin-top: 3px;
+    color: var(--color-texto-secundario);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.resultado-buscador-vacio {
+    padding: 12px 13px;
+    color: var(--color-texto-secundario);
+    font-size: 13px;
+}
