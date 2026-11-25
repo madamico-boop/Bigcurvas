@@ -1513,3 +1513,198 @@ form {
     color: var(--color-texto-secundario);
     font-size: 13px;
 }
+
+/* =========================================
+   HISTORIAL DE VENTAS
+========================================= */
+
+.filtros-historial {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(5, minmax(135px, 1fr)) auto;
+    gap: 14px;
+    align-items: end;
+    margin: 24px 0 16px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-suave);
+}
+
+.resumen-historial {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.resumen-historial-card {
+    padding: 18px 20px;
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-suave);
+}
+
+.resumen-historial-card span {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--color-texto-secundario);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.resumen-historial-card strong {
+    color: var(--color-texto);
+    font-size: 23px;
+}
+
+.canal-venta,
+.estado-pago-historial {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.canal-local {
+    background-color: #eef3f8;
+    color: #496175;
+}
+
+.canal-online {
+    background-color: var(--color-principal-suave);
+    color: var(--color-principal-hover);
+}
+
+.estado-pago-historial {
+    background-color: #e7f4ec;
+    color: #2f6b46;
+}
+
+.detalle-venta-card {
+    margin-top: 28px;
+    padding: 24px;
+    background-color: white;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-suave);
+}
+
+.detalle-venta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.detalle-venta-header h2 {
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.detalle-venta-datos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.detalle-venta-datos > div {
+    padding: 13px 14px;
+    background-color: #faf7f8;
+    border: 1px solid #eee7ea;
+    border-radius: 9px;
+}
+
+.detalle-venta-datos span,
+.detalle-venta-total span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-texto-secundario);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.detalle-venta-datos strong {
+    font-size: 14px;
+}
+
+.tabla-detalle-venta {
+    margin-top: 18px;
+}
+
+.detalle-venta-total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.detalle-venta-total span {
+    margin-bottom: 0;
+}
+
+.detalle-venta-total strong {
+    color: var(--color-principal);
+    font-size: 22px;
+}
+
+@media (max-width: 1300px) {
+    .filtros-historial {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filtros-historial .campo-filtro-busqueda {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 850px) {
+    .detalle-venta-datos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .filtros-historial {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .filtros-historial .campo-filtro-busqueda {
+        grid-column: auto;
+    }
+
+    .filtros-historial .boton-secundario {
+        width: 100%;
+    }
+
+    .resumen-historial {
+        grid-template-columns: 1fr;
+    }
+
+    .detalle-venta-card {
+        padding: 18px;
+    }
+
+    .detalle-venta-header {
+        flex-direction: column;
+    }
+
+    .detalle-venta-header .boton-secundario {
+        width: 100%;
+    }
+
+    .detalle-venta-datos {
+        grid-template-columns: 1fr;
+    }
+
+    .detalle-venta-total {
+        justify-content: space-between;
+    }
+}
