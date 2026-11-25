@@ -75,7 +75,8 @@ CREATE TABLE variantes (
 
     FOREIGN KEY (id_producto)
         REFERENCES productos(id_producto),
-        UNIQUE (id_producto, talla, color),
+
+    UNIQUE (id_producto, talla, color)
 );
 
 
