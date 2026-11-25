@@ -1185,6 +1185,64 @@ app.get('/api/productos',requiereAutenticacion, async (req, res) => {
 
 });
 
+app.get('/api/productos/:id/variantes', requiereAutenticacion, async (req, res) => {
+
+    const idProducto = Number(req.params.id);
+
+    if (!Number.isInteger(idProducto) || idProducto <= 0) {
+        return res.status(400).json({
+            mensaje: 'Producto inválido'
+        });
+    }
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                v.id_variante,
+                v.talla,
+                v.color,
+                v.sku,
+                COALESCE(
+                    MAX(CASE WHEN s.nombre = 'Rancagua' THEN i.stock_actual END),
+                    0
+                ) AS stock_rancagua,
+                MAX(CASE WHEN s.nombre = 'Rancagua' THEN i.stock_minimo END) AS minimo_rancagua,
+                COALESCE(
+                    MAX(CASE WHEN s.nombre = 'Bodega' THEN i.stock_actual END),
+                    0
+                ) AS stock_bodega,
+                MAX(CASE WHEN s.nombre = 'Bodega' THEN i.stock_minimo END) AS minimo_bodega
+            FROM variantes v
+            LEFT JOIN inventario i
+                ON v.id_variante = i.id_variante
+            LEFT JOIN sucursales s
+                ON i.id_sucursal = s.id_sucursal
+            WHERE v.id_producto = $1
+            GROUP BY
+                v.id_variante,
+                v.talla,
+                v.color,
+                v.sku
+            ORDER BY
+                v.color,
+                v.talla
+        `, [idProducto]);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            mensaje: 'Error al obtener variantes del producto'
+        });
+
+    }
+
+});
+
 app.post('/api/productos', requiereAdmin, async (req, res) => {
 
     const {
