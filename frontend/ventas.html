@@ -40,12 +40,20 @@
                     Buscar cliente
                 </label>
 
-                <input
-                    type="search"
-                    id="buscarClienteVenta"
-                    placeholder="Nombre o RUT"
-                    autocomplete="off"
-                >
+                <div class="buscador-venta">
+                    <input
+                        type="search"
+                        id="buscarClienteVenta"
+                        placeholder="Nombre o RUT"
+                        autocomplete="off"
+                    >
+
+                    <div
+                        id="resultadosClienteVenta"
+                        class="resultados-buscador-venta"
+                        hidden
+                    ></div>
+                </div>
 
                 <label for="cliente">
                     Cliente (opcional)
@@ -87,12 +95,20 @@
                     Buscar producto
                 </label>
 
-                <input
-                    type="search"
-                    id="buscarProductoVenta"
-                    placeholder="Escriba el nombre"
-                    autocomplete="off"
-                >
+                <div class="buscador-venta">
+                    <input
+                        type="search"
+                        id="buscarProductoVenta"
+                        placeholder="Escriba el nombre"
+                        autocomplete="off"
+                    >
+
+                    <div
+                        id="resultadosProductoVenta"
+                        class="resultados-buscador-venta"
+                        hidden
+                    ></div>
+                </div>
 
                 <label for="producto">
                     Producto
