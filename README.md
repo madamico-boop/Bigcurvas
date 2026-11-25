@@ -16,12 +16,15 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
 - Contraseñas protegidas con bcrypt.
 - Roles de **Administrador** y **Vendedora**.
 - Dashboard diferenciado según el rol.
-- Inventario por sucursal.
+- Inventario por sucursal con buscador y filtros por sucursal y estado.
+- Estados visuales para stock disponible, stock bajo y sin stock.
 - Sucursales actuales:
   - Rancagua
   - Bodega
 - Productos organizados por categorías.
+- Buscador y filtros de productos por categoría y estado.
 - Variantes por talla y color.
+- Consulta de variantes existentes con stock de Rancagua y Bodega.
 - SKU opcional por variante.
 - Stock actual y stock mínimo por sucursal.
 - Estados de inventario:
@@ -29,9 +32,18 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
   - Stock bajo
   - Sin stock
 - Registro de ventas con múltiples productos.
+- Buscador de clientes por nombre o RUT durante la venta.
+- Buscador de productos con sugerencias y stock disponible.
+- Carrito con controles para aumentar, disminuir o quitar productos.
+- Validación de stock disponible antes de confirmar una venta.
+- Una misma venta utiliza una única sucursal.
+- Selección de canal de venta: Local u Online.
 - Descuento automático de stock al confirmar una venta.
 - Cliente opcional en una venta.
-- Historial de ventas con detalle de productos.
+- Historial de ventas con filtros por fecha, sucursal, cliente y canal.
+- Búsqueda de ventas por número de venta o cliente.
+- Resumen de cantidad de ventas y total vendido según los filtros.
+- Detalle de venta con productos, variantes, cantidades, subtotales y total.
 - Gestión de clientes.
 - Activación y desactivación de productos y clientes.
 - Reportes con filtros por:
@@ -192,7 +204,7 @@ Crear una base de datos PostgreSQL para el proyecto.
 Ejemplo:
 
 ```sql
-CREATE DATABASE bigcurvas;
+CREATE DATABASE bigcurvas_db;
 ```
 
 Luego ejecutar, en este orden:
@@ -225,7 +237,7 @@ Ejemplo de configuración:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=bigcurvas
+DB_NAME=bigcurvas_db
 DB_USER=postgres
 DB_PASSWORD=TU_PASSWORD_POSTGRES
 
@@ -321,14 +333,12 @@ Las ventas se almacenan junto con sus detalles y el stock se descuenta dentro de
 
 # Pendientes y mejoras futuras
 
-Antes de considerar el sistema terminado todavía se pueden incorporar mejoras como:
+El sistema ya cubre el flujo principal de inventario, productos, clientes, ventas, historial y reportes. Entre las mejoras que todavía se pueden incorporar se encuentran:
 
-- Buscadores y filtros en inventario, productos, clientes e historial.
-- Mejor visualización y administración de variantes existentes.
+- Buscador y filtros adicionales en el módulo de clientes.
+- Edición de variantes existentes desde la interfaz.
 - Filtros rápidos en reportes.
 - Reportes adicionales por vendedora y stock crítico.
-- Mejoras al flujo del carrito de venta.
-- Selección de canal de venta en lugar de utilizar únicamente el valor actual.
 - Gestión más completa de estados o métodos de pago.
 - Administración de usuarios desde la interfaz.
 - Cambio de contraseña desde el sistema.
