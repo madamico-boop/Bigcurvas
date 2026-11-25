@@ -362,6 +362,7 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
 
     const {
         id_cliente,
+        canal,
         items
     } = req.body;
 
@@ -378,6 +379,28 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
         return res.status(400).json({
             mensaje:
                 'La venta debe contener productos'
+        });
+
+    }
+
+
+    const canalVenta =
+        typeof canal === 'string' &&
+        canal.trim()
+            ? canal.trim()
+            : 'Local';
+
+
+    if (
+        ![
+            'Local',
+            'Online'
+        ].includes(canalVenta)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El canal de venta no es válido'
         });
 
     }
@@ -666,7 +689,7 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
                 req.session.usuario.id_usuario,
                 id_cliente || null,
                 idSucursalVenta,
-                'Local',
+                canalVenta,
                 'Pagado',
                 total
             ]);
