@@ -2250,6 +2250,302 @@ app.post('/api/variantes', requiereAdmin, async (req, res) => {
 
 });
 
+app.put('/api/variantes/:id', requiereAdmin, async (req, res) => {
+
+    const idVariante =
+        Number(req.params.id);
+
+    const {
+        talla,
+        color,
+        sku,
+        stock_rancagua,
+        minimo_rancagua,
+        stock_bodega,
+        minimo_bodega
+    } = req.body;
+
+    const tallaLimpia =
+        typeof talla === 'string'
+            ? talla.trim()
+            : '';
+
+    const colorLimpio =
+        typeof color === 'string'
+            ? color.trim()
+            : '';
+
+    const skuLimpio =
+        typeof sku === 'string'
+            ? sku.trim()
+            : '';
+
+    const convertirStock = valor => {
+
+        const numero =
+            Number(valor);
+
+        return Number.isInteger(numero) &&
+            numero >= 0
+                ? numero
+                : null;
+
+    };
+
+    const convertirMinimo = valor => {
+
+        if (
+            valor === '' ||
+            valor === null ||
+            valor === undefined
+        ) {
+
+            return null;
+
+        }
+
+        const numero =
+            Number(valor);
+
+        return Number.isInteger(numero) &&
+            numero >= 0
+                ? numero
+                : NaN;
+
+    };
+
+    const stockRancagua =
+        convertirStock(
+            stock_rancagua
+        );
+
+    const stockBodega =
+        convertirStock(
+            stock_bodega
+        );
+
+    const minimoRancagua =
+        convertirMinimo(
+            minimo_rancagua
+        );
+
+    const minimoBodega =
+        convertirMinimo(
+            minimo_bodega
+        );
+
+    if (
+        !Number.isInteger(idVariante) ||
+        idVariante <= 0
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Variante no válida'
+        });
+
+    }
+
+    if (
+        !tallaLimpia ||
+        !colorLimpio
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Talla y color son obligatorios'
+        });
+
+    }
+
+    if (
+        stockRancagua === null ||
+        stockBodega === null ||
+        Number.isNaN(minimoRancagua) ||
+        Number.isNaN(minimoBodega)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Los valores de stock deben ser números enteros iguales o mayores a 0'
+        });
+
+    }
+
+    const client =
+        await pool.connect();
+
+    try {
+
+        await client.query(
+            'BEGIN'
+        );
+
+        const varianteActualizada =
+            await client.query(`
+                UPDATE variantes
+                SET
+                    talla = $1,
+                    color = $2,
+                    sku = $3
+                WHERE id_variante = $4
+                RETURNING
+                    id_variante,
+                    id_producto,
+                    talla,
+                    color,
+                    sku
+            `, [
+                tallaLimpia,
+                colorLimpio,
+                skuLimpio || null,
+                idVariante
+            ]);
+
+        if (
+            varianteActualizada.rows.length === 0
+        ) {
+
+            await client.query(
+                'ROLLBACK'
+            );
+
+            return res.status(404).json({
+                mensaje:
+                    'Variante no encontrada'
+            });
+
+        }
+
+        const sucursales =
+            await client.query(`
+                SELECT
+                    id_sucursal,
+                    nombre
+                FROM sucursales
+                WHERE nombre IN ('Rancagua', 'Bodega')
+            `);
+
+        const datosSucursal = [
+            {
+                nombre:
+                    'Rancagua',
+                stock:
+                    stockRancagua,
+                minimo:
+                    minimoRancagua
+            },
+            {
+                nombre:
+                    'Bodega',
+                stock:
+                    stockBodega,
+                minimo:
+                    minimoBodega
+            }
+        ];
+
+        for (
+            const datos
+            of datosSucursal
+        ) {
+
+            const sucursal =
+                sucursales.rows.find(
+                    item =>
+                        item.nombre ===
+                        datos.nombre
+                );
+
+            if (!sucursal) {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+                return res.status(500).json({
+                    mensaje:
+                        'No se encontró la sucursal ' +
+                        datos.nombre
+                });
+
+            }
+
+            await client.query(`
+                INSERT INTO inventario (
+                    id_variante,
+                    id_sucursal,
+                    stock_actual,
+                    stock_minimo
+                )
+                VALUES ($1, $2, $3, $4)
+
+                ON CONFLICT (
+                    id_variante,
+                    id_sucursal
+                )
+
+                DO UPDATE SET
+                    stock_actual =
+                        EXCLUDED.stock_actual,
+                    stock_minimo =
+                        EXCLUDED.stock_minimo
+            `, [
+                idVariante,
+                sucursal.id_sucursal,
+                datos.stock,
+                datos.minimo
+            ]);
+
+        }
+
+        await client.query(
+            'COMMIT'
+        );
+
+        res.json({
+            mensaje:
+                'Variante actualizada correctamente',
+            variante:
+                varianteActualizada.rows[0]
+        });
+
+    } catch (error) {
+
+        await client.query(
+            'ROLLBACK'
+        );
+
+        console.error(
+            'Error al actualizar variante:',
+            error
+        );
+
+        if (
+            error.code === '23505'
+        ) {
+
+            return res.status(400).json({
+                mensaje:
+                    'Ya existe una variante con esa talla/color o el SKU ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje:
+                'Error al actualizar variante'
+        });
+
+    } finally {
+
+        client.release();
+
+    }
+
+});
+
+
 app.patch('/api/productos/:id/estado',requiereAdmin, async (req, res) => {
 
     const idProducto = Number(req.params.id);
