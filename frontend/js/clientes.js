@@ -19,10 +19,248 @@ const cancelarCliente =
 const mensajeEdicionCliente =
     document.getElementById('mensajeEdicionCliente');
 
+const buscarCliente =
+    document.getElementById('buscarCliente');
+
+const filtroEstadoCliente =
+    document.getElementById('filtroEstadoCliente');
+
+const limpiarFiltrosClientes =
+    document.getElementById('limpiarFiltrosClientes');
+
+const contadorClientes =
+    document.getElementById('contadorClientes');
+
 
 let clienteEditandoId = null;
 
 let usuarioActual = null;
+
+let clientesCompletos = [];
+
+
+// =====================================
+// UTILIDADES
+// =====================================
+
+function escaparHtml(valor) {
+
+    return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+}
+
+
+function obtenerValor(id) {
+
+    return document
+        .getElementById(id)
+        .value
+        .trim();
+
+}
+
+
+function mostrarMensaje(
+    elemento,
+    texto,
+    tipo = ''
+) {
+
+    elemento.textContent =
+        texto;
+
+    elemento.classList.remove(
+        'mensaje-exito',
+        'mensaje-error'
+    );
+
+    if (tipo) {
+
+        elemento.classList.add(
+            tipo === 'exito'
+                ? 'mensaje-exito'
+                : 'mensaje-error'
+        );
+
+    }
+
+}
+
+
+function limpiarRut(rut) {
+
+    return rut
+        .replaceAll('.', '')
+        .replaceAll('-', '')
+        .replaceAll(' ', '')
+        .toUpperCase();
+
+}
+
+
+function rutValido(rut) {
+
+    if (!rut) {
+
+        return true;
+
+    }
+
+    const limpio =
+        limpiarRut(rut);
+
+    if (
+        !/^\d{7,8}[0-9K]$/.test(
+            limpio
+        )
+    ) {
+
+        return false;
+
+    }
+
+    const cuerpo =
+        limpio.slice(0, -1);
+
+    const digito =
+        limpio.slice(-1);
+
+    let suma = 0;
+    let multiplicador = 2;
+
+    for (
+        let i = cuerpo.length - 1;
+        i >= 0;
+        i -= 1
+    ) {
+
+        suma +=
+            Number(cuerpo[i]) *
+            multiplicador;
+
+        multiplicador =
+            multiplicador === 7
+                ? 2
+                : multiplicador + 1;
+
+    }
+
+    const resultado =
+        11 - (suma % 11);
+
+    const esperado =
+        resultado === 11
+            ? '0'
+            : resultado === 10
+                ? 'K'
+                : String(resultado);
+
+    return digito === esperado;
+
+}
+
+
+function correoValido(correo) {
+
+    if (!correo) {
+
+        return true;
+
+    }
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        .test(correo);
+
+}
+
+
+function validarCliente(cliente) {
+
+    if (
+        !cliente.nombre ||
+        cliente.nombre.length < 2
+    ) {
+
+        return 'Ingresa un nombre válido.';
+
+    }
+
+    if (
+        cliente.rut &&
+        !rutValido(cliente.rut)
+    ) {
+
+        return 'El RUT ingresado no es válido.';
+
+    }
+
+    if (
+        cliente.correo &&
+        !correoValido(
+            cliente.correo
+        )
+    ) {
+
+        return 'El correo ingresado no es válido.';
+
+    }
+
+    return '';
+
+}
+
+
+function leerClienteFormulario(
+    editar = false
+) {
+
+    const prefijo =
+        editar
+            ? 'editar'
+            : '';
+
+    const id = nombre =>
+        prefijo
+            ? (
+                'editar' +
+                nombre.charAt(0).toUpperCase() +
+                nombre.slice(1)
+            )
+            : nombre;
+
+    return {
+        nombre:
+            obtenerValor(
+                id('nombreCliente')
+            ),
+        rut:
+            obtenerValor(
+                id('rutCliente')
+            ),
+        telefono:
+            obtenerValor(
+                id('telefonoCliente')
+            ),
+        correo:
+            obtenerValor(
+                id('correoCliente')
+            ),
+        direccion:
+            obtenerValor(
+                id('direccionCliente')
+            ),
+        comuna:
+            obtenerValor(
+                id('comunaCliente')
+            )
+    };
+
+}
 
 
 // =====================================
@@ -37,10 +275,10 @@ async function cargarUsuario() {
             await fetch(
                 '/api/auth/me',
                 {
-                    credentials: 'include'
+                    credentials:
+                        'include'
                 }
             );
-
 
         if (!respuesta.ok) {
 
@@ -51,17 +289,13 @@ async function cargarUsuario() {
 
         }
 
-
         const datos =
             await respuesta.json();
-
 
         usuarioActual =
             datos.usuario;
 
-
         return true;
-
 
     } catch (error) {
 
@@ -70,10 +304,8 @@ async function cargarUsuario() {
             error
         );
 
-
         window.location.href =
             'index.html';
-
 
         return false;
 
@@ -98,6 +330,221 @@ function esAdministrador() {
 
 
 // =====================================
+// FILTROS
+// =====================================
+
+function aplicarFiltros() {
+
+    const texto =
+        buscarCliente.value
+            .trim()
+            .toLowerCase();
+
+    const estado =
+        filtroEstadoCliente.value;
+
+    const filtrados =
+        clientesCompletos.filter(
+            cliente => {
+
+                const valoresBusqueda = [
+                    cliente.nombre,
+                    cliente.rut,
+                    cliente.telefono,
+                    cliente.correo,
+                    cliente.comuna
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                const coincideTexto =
+                    !texto ||
+                    valoresBusqueda.includes(
+                        texto
+                    );
+
+                const coincideEstado =
+                    !estado ||
+                    (
+                        estado === 'activo' &&
+                        cliente.activo
+                    ) ||
+                    (
+                        estado === 'inactivo' &&
+                        !cliente.activo
+                    );
+
+                return (
+                    coincideTexto &&
+                    coincideEstado
+                );
+
+            }
+        );
+
+    mostrarClientes(
+        filtrados
+    );
+
+}
+
+
+// =====================================
+// MOSTRAR CLIENTES
+// =====================================
+
+function mostrarClientes(clientes) {
+
+    tablaClientes.innerHTML =
+        '';
+
+    contadorClientes.textContent =
+        clientes.length === 1
+            ? '1 cliente'
+            : clientes.length +
+                ' clientes';
+
+    if (
+        clientes.length === 0
+    ) {
+
+        tablaClientes.innerHTML =
+            '<tr>' +
+                '<td colspan="7" class="sin-resultados">' +
+                    'No hay clientes que coincidan con los filtros seleccionados.' +
+                '</td>' +
+            '</tr>';
+
+        return;
+
+    }
+
+    const admin =
+        esAdministrador();
+
+    clientes.forEach(
+        cliente => {
+
+            const fila =
+                document.createElement(
+                    'tr'
+                );
+
+            fila.innerHTML =
+                '<td>' +
+                    '<strong>' +
+                        escaparHtml(
+                            cliente.nombre
+                        ) +
+                    '</strong>' +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(
+                        cliente.rut ||
+                        '-'
+                    ) +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(
+                        cliente.telefono ||
+                        '-'
+                    ) +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(
+                        cliente.correo ||
+                        '-'
+                    ) +
+                '</td>' +
+                '<td>' +
+                    escaparHtml(
+                        cliente.comuna ||
+                        '-'
+                    ) +
+                '</td>' +
+                '<td>' +
+                    '<span class="estado-cliente ' +
+                        (
+                            cliente.activo
+                                ? 'estado-cliente-activo'
+                                : 'estado-cliente-inactivo'
+                        ) +
+                    '">' +
+                        (
+                            cliente.activo
+                                ? 'Activo'
+                                : 'Inactivo'
+                        ) +
+                    '</span>' +
+                '</td>' +
+                '<td>' +
+                    '<div class="acciones-cliente">' +
+                        '<button type="button" class="boton-editar">' +
+                            'Editar' +
+                        '</button>' +
+                        (
+                            admin
+                                ? (
+                                    '<button type="button" class="boton-estado">' +
+                                        (
+                                            cliente.activo
+                                                ? 'Desactivar'
+                                                : 'Reactivar'
+                                        ) +
+                                    '</button>'
+                                )
+                                : ''
+                        ) +
+                    '</div>' +
+                '</td>';
+
+            tablaClientes
+                .appendChild(
+                    fila
+                );
+
+            const botonEditar =
+                fila.querySelector(
+                    '.boton-editar'
+                );
+
+            botonEditar.addEventListener(
+                'click',
+                () => {
+
+                    abrirEdicion(
+                        cliente
+                    );
+
+                }
+            );
+
+            if (admin) {
+
+                const botonEstado =
+                    fila.querySelector(
+                        '.boton-estado'
+                    );
+
+                botonEstado
+                    .addEventListener(
+                        'click',
+                        () =>
+                            cambiarEstadoCliente(
+                                cliente
+                            )
+                    );
+
+            }
+
+        }
+    );
+
+}
+
+
+// =====================================
 // CARGAR CLIENTES
 // =====================================
 
@@ -109,12 +556,14 @@ async function cargarClientes() {
             await fetch(
                 '/api/clientes',
                 {
-                    credentials: 'include'
+                    credentials:
+                        'include'
                 }
             );
 
-
-        if (respuesta.status === 401) {
+        if (
+            respuesta.status === 401
+        ) {
 
             window.location.href =
                 'index.html';
@@ -123,10 +572,8 @@ async function cargarClientes() {
 
         }
 
-
         const clientes =
             await respuesta.json();
-
 
         if (!respuesta.ok) {
 
@@ -138,295 +585,184 @@ async function cargarClientes() {
 
         }
 
+        clientesCompletos =
+            clientes;
 
-        tablaClientes.innerHTML =
-            '';
-
-
-        const admin =
-            esAdministrador();
-
-
-        clientes.forEach(
-            cliente => {
-
-                const fila =
-                    document.createElement(
-                        'tr'
-                    );
-
-
-                fila.innerHTML = `
-
-                    <td>
-                        ${cliente.nombre}
-                    </td>
-
-                    <td>
-                        ${cliente.rut || '-'}
-                    </td>
-
-                    <td>
-                        ${cliente.telefono || '-'}
-                    </td>
-
-                    <td>
-                        ${cliente.correo || '-'}
-                    </td>
-
-                    <td>
-                        ${cliente.comuna || '-'}
-                    </td>
-
-                    <td>
-                        ${
-                            cliente.activo
-                                ? 'Activo'
-                                : 'Inactivo'
-                        }
-                    </td>
-
-                    <td>
-
-                        <button
-                            class="boton-editar"
-                        >
-                            Editar
-                        </button>
-
-                        ${
-                            admin
-                                ? `
-                                    <button
-                                        class="boton-estado"
-                                    >
-                                        ${
-                                            cliente.activo
-                                                ? 'Desactivar'
-                                                : 'Reactivar'
-                                        }
-                                    </button>
-                                `
-                                : ''
-                        }
-
-                    </td>
-
-                `;
-
-
-                tablaClientes
-                    .appendChild(
-                        fila
-                    );
-
-
-                // =====================================
-                // EDITAR
-                // ADMIN Y VENDEDORA
-                // =====================================
-
-                const botonEditar =
-                    fila.querySelector(
-                        '.boton-editar'
-                    );
-
-
-                botonEditar.addEventListener(
-                    'click',
-                    () => {
-
-                        clienteEditandoId =
-                            cliente.id_cliente;
-
-
-                        document
-                            .getElementById(
-                                'editarNombreCliente'
-                            )
-                            .value =
-                                cliente.nombre ||
-                                '';
-
-
-                        document
-                            .getElementById(
-                                'editarRutCliente'
-                            )
-                            .value =
-                                cliente.rut ||
-                                '';
-
-
-                        document
-                            .getElementById(
-                                'editarTelefonoCliente'
-                            )
-                            .value =
-                                cliente.telefono ||
-                                '';
-
-
-                        document
-                            .getElementById(
-                                'editarCorreoCliente'
-                            )
-                            .value =
-                                cliente.correo ||
-                                '';
-
-
-                        document
-                            .getElementById(
-                                'editarDireccionCliente'
-                            )
-                            .value =
-                                cliente.direccion ||
-                                '';
-
-
-                        document
-                            .getElementById(
-                                'editarComunaCliente'
-                            )
-                            .value =
-                                cliente.comuna ||
-                                '';
-
-
-                        editarClienteSection
-                            .hidden =
-                                false;
-
-
-                        mensajeEdicionCliente
-                            .textContent =
-                                '';
-
-
-                        editarClienteSection
-                            .scrollIntoView({
-                                behavior:
-                                    'smooth'
-                            });
-
-                    }
-                );
-
-
-                // =====================================
-                // ACTIVAR / DESACTIVAR
-                // SOLO ADMIN
-                // =====================================
-
-                if (admin) {
-
-                    const botonEstado =
-                        fila.querySelector(
-                            '.boton-estado'
-                        );
-
-
-                    botonEstado.addEventListener(
-                        'click',
-                        async () => {
-
-                            const nuevoEstado =
-                                !cliente.activo;
-
-
-                            const confirmar =
-                                confirm(
-
-                                    nuevoEstado
-                                        ? `¿Reactivar a ${cliente.nombre}?`
-                                        : `¿Desactivar a ${cliente.nombre}?`
-
-                                );
-
-
-                            if (!confirmar) {
-
-                                return;
-
-                            }
-
-
-                            try {
-
-                                const respuestaEstado =
-                                    await fetch(
-
-                                        `/api/clientes/${cliente.id_cliente}/estado`,
-
-                                        {
-
-                                            method:
-                                                'PATCH',
-
-                                            credentials:
-                                                'include',
-
-                                            headers: {
-
-                                                'Content-Type':
-                                                    'application/json'
-
-                                            },
-
-                                            body:
-                                                JSON.stringify({
-                                                    activo:
-                                                        nuevoEstado
-                                                })
-
-                                        }
-
-                                    );
-
-
-                                const resultado =
-                                    await respuestaEstado
-                                        .json();
-
-
-                                mensajeCliente
-                                    .textContent =
-                                        resultado.mensaje;
-
-
-                                if (
-                                    respuestaEstado.ok
-                                ) {
-
-                                    await cargarClientes();
-
-                                }
-
-
-                            } catch (error) {
-
-                                console.error(
-                                    'Error al cambiar estado del cliente:',
-                                    error
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-
-            }
-        );
-
+        aplicarFiltros();
 
     } catch (error) {
 
         console.error(
             'Error al cargar clientes:',
             error
+        );
+
+    }
+
+}
+
+
+// =====================================
+// ABRIR EDICIÓN
+// =====================================
+
+function abrirEdicion(cliente) {
+
+    clienteEditandoId =
+        cliente.id_cliente;
+
+    document
+        .getElementById(
+            'editarNombreCliente'
+        )
+        .value =
+            cliente.nombre ||
+            '';
+
+    document
+        .getElementById(
+            'editarRutCliente'
+        )
+        .value =
+            cliente.rut ||
+            '';
+
+    document
+        .getElementById(
+            'editarTelefonoCliente'
+        )
+        .value =
+            cliente.telefono ||
+            '';
+
+    document
+        .getElementById(
+            'editarCorreoCliente'
+        )
+        .value =
+            cliente.correo ||
+            '';
+
+    document
+        .getElementById(
+            'editarDireccionCliente'
+        )
+        .value =
+            cliente.direccion ||
+            '';
+
+    document
+        .getElementById(
+            'editarComunaCliente'
+        )
+        .value =
+            cliente.comuna ||
+            '';
+
+    editarClienteSection.hidden =
+        false;
+
+    mostrarMensaje(
+        mensajeEdicionCliente,
+        ''
+    );
+
+    editarClienteSection
+        .scrollIntoView({
+            behavior:
+                'smooth',
+            block:
+                'start'
+        });
+
+}
+
+
+// =====================================
+// ACTIVAR / DESACTIVAR
+// SOLO ADMIN
+// =====================================
+
+async function cambiarEstadoCliente(
+    cliente
+) {
+
+    const nuevoEstado =
+        !cliente.activo;
+
+    const confirmar =
+        confirm(
+            nuevoEstado
+                ? (
+                    '¿Reactivar a ' +
+                    cliente.nombre +
+                    '?'
+                )
+                : (
+                    '¿Desactivar a ' +
+                    cliente.nombre +
+                    '?'
+                )
+        );
+
+    if (!confirmar) {
+
+        return;
+
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                '/api/clientes/' +
+                    cliente.id_cliente +
+                    '/estado',
+                {
+                    method:
+                        'PATCH',
+                    credentials:
+                        'include',
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+                    body:
+                        JSON.stringify({
+                            activo:
+                                nuevoEstado
+                        })
+                }
+            );
+
+        const resultado =
+            await respuesta.json();
+
+        mostrarMensaje(
+            mensajeCliente,
+            resultado.mensaje,
+            respuesta.ok
+                ? 'exito'
+                : 'error'
+        );
+
+        if (respuesta.ok) {
+
+            await cargarClientes();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            'Error al cambiar estado del cliente:',
+            error
+        );
+
+        mostrarMensaje(
+            mensajeCliente,
+            'Error al cambiar el estado del cliente.',
+            'error'
         );
 
     }
@@ -445,59 +781,25 @@ clienteForm.addEventListener(
 
         event.preventDefault();
 
+        const cliente =
+            leerClienteFormulario();
 
-        const cliente = {
+        const errorValidacion =
+            validarCliente(
+                cliente
+            );
 
-            nombre:
-                document
-                    .getElementById(
-                        'nombreCliente'
-                    )
-                    .value
-                    .trim(),
+        if (errorValidacion) {
 
-            rut:
-                document
-                    .getElementById(
-                        'rutCliente'
-                    )
-                    .value
-                    .trim(),
+            mostrarMensaje(
+                mensajeCliente,
+                errorValidacion,
+                'error'
+            );
 
-            telefono:
-                document
-                    .getElementById(
-                        'telefonoCliente'
-                    )
-                    .value
-                    .trim(),
+            return;
 
-            correo:
-                document
-                    .getElementById(
-                        'correoCliente'
-                    )
-                    .value
-                    .trim(),
-
-            direccion:
-                document
-                    .getElementById(
-                        'direccionCliente'
-                    )
-                    .value
-                    .trim(),
-
-            comuna:
-                document
-                    .getElementById(
-                        'comunaCliente'
-                    )
-                    .value
-                    .trim()
-
-        };
-
+        }
 
         try {
 
@@ -505,37 +807,31 @@ clienteForm.addEventListener(
                 await fetch(
                     '/api/clientes',
                     {
-
                         method:
                             'POST',
-
                         credentials:
                             'include',
-
                         headers: {
-
                             'Content-Type':
                                 'application/json'
-
                         },
-
                         body:
                             JSON.stringify(
                                 cliente
                             )
-
                     }
                 );
-
 
             const resultado =
                 await respuesta.json();
 
-
-            mensajeCliente
-                .textContent =
-                    resultado.mensaje;
-
+            mostrarMensaje(
+                mensajeCliente,
+                resultado.mensaje,
+                respuesta.ok
+                    ? 'exito'
+                    : 'error'
+            );
 
             if (respuesta.ok) {
 
@@ -545,7 +841,6 @@ clienteForm.addEventListener(
 
             }
 
-
         } catch (error) {
 
             console.error(
@@ -553,10 +848,11 @@ clienteForm.addEventListener(
                 error
             );
 
-
-            mensajeCliente
-                .textContent =
-                    'Error al agregar cliente';
+            mostrarMensaje(
+                mensajeCliente,
+                'Error al agregar cliente.',
+                'error'
+            );
 
         }
 
@@ -575,124 +871,82 @@ editarClienteForm.addEventListener(
 
         event.preventDefault();
 
-
         if (!clienteEditandoId) {
 
             return;
 
         }
 
+        const cliente =
+            leerClienteFormulario(
+                true
+            );
 
-        const cliente = {
+        const errorValidacion =
+            validarCliente(
+                cliente
+            );
 
-            nombre:
-                document
-                    .getElementById(
-                        'editarNombreCliente'
-                    )
-                    .value
-                    .trim(),
+        if (errorValidacion) {
 
-            rut:
-                document
-                    .getElementById(
-                        'editarRutCliente'
-                    )
-                    .value
-                    .trim(),
+            mostrarMensaje(
+                mensajeEdicionCliente,
+                errorValidacion,
+                'error'
+            );
 
-            telefono:
-                document
-                    .getElementById(
-                        'editarTelefonoCliente'
-                    )
-                    .value
-                    .trim(),
+            return;
 
-            correo:
-                document
-                    .getElementById(
-                        'editarCorreoCliente'
-                    )
-                    .value
-                    .trim(),
-
-            direccion:
-                document
-                    .getElementById(
-                        'editarDireccionCliente'
-                    )
-                    .value
-                    .trim(),
-
-            comuna:
-                document
-                    .getElementById(
-                        'editarComunaCliente'
-                    )
-                    .value
-                    .trim()
-
-        };
-
+        }
 
         try {
 
             const respuesta =
                 await fetch(
-                    `/api/clientes/${clienteEditandoId}`,
+                    '/api/clientes/' +
+                        clienteEditandoId,
                     {
-
                         method:
                             'PUT',
-
                         credentials:
                             'include',
-
                         headers: {
-
                             'Content-Type':
                                 'application/json'
-
                         },
-
                         body:
                             JSON.stringify(
                                 cliente
                             )
-
                     }
                 );
-
 
             const resultado =
                 await respuesta.json();
 
-
-            mensajeEdicionCliente
-                .textContent =
-                    resultado.mensaje;
-
+            mostrarMensaje(
+                mensajeEdicionCliente,
+                resultado.mensaje,
+                respuesta.ok
+                    ? 'exito'
+                    : 'error'
+            );
 
             if (respuesta.ok) {
 
                 await cargarClientes();
 
-
                 clienteEditandoId =
                     null;
-
 
                 editarClienteSection
                     .hidden =
                         true;
 
-
                 editarClienteForm
                     .reset();
 
             }
-
 
         } catch (error) {
 
@@ -701,10 +955,11 @@ editarClienteForm.addEventListener(
                 error
             );
 
-
-            mensajeEdicionCliente
-                .textContent =
-                    'Error al editar cliente';
+            mostrarMensaje(
+                mensajeEdicionCliente,
+                'Error al editar cliente.',
+                'error'
+            );
 
         }
 
@@ -723,22 +978,52 @@ cancelarCliente.addEventListener(
         clienteEditandoId =
             null;
 
-
         editarClienteSection
             .hidden =
                 true;
 
-
         editarClienteForm
             .reset();
 
-
-        mensajeEdicionCliente
-            .textContent =
-                '';
+        mostrarMensaje(
+            mensajeEdicionCliente,
+            ''
+        );
 
     }
 );
+
+
+// =====================================
+// FILTROS
+// =====================================
+
+buscarCliente.addEventListener(
+    'input',
+    aplicarFiltros
+);
+
+filtroEstadoCliente
+    .addEventListener(
+        'change',
+        aplicarFiltros
+    );
+
+limpiarFiltrosClientes
+    .addEventListener(
+        'click',
+        () => {
+
+            buscarCliente.value =
+                '';
+
+            filtroEstadoCliente.value =
+                '';
+
+            aplicarFiltros();
+
+        }
+    );
 
 
 // =====================================
@@ -750,17 +1035,14 @@ async function iniciar() {
     editarClienteSection.hidden =
         true;
 
-
     const autenticado =
         await cargarUsuario();
-
 
     if (!autenticado) {
 
         return;
 
     }
-
 
     await cargarClientes();
 
