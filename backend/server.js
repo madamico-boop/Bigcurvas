@@ -9,11 +9,47 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 
-const PORT = 3000;
+const PORT =
+    Number(process.env.PORT) ||
+    3000;
+
+
+if (
+    !process.env.SESSION_SECRET ||
+    process.env.SESSION_SECRET.length < 32
+) {
+
+    throw new Error(
+        'SESSION_SECRET debe existir y tener al menos 32 caracteres'
+    );
+
+}
+
+
+app.disable(
+    'x-powered-by'
+);
+
+
+if (
+    process.env.NODE_ENV ===
+    'production'
+) {
+
+    app.set(
+        'trust proxy',
+        1
+    );
+
+}
 
 
 // Permite recibir datos JSON desde el frontend
-app.use(express.json());
+app.use(
+    express.json({
+        limit: '100kb'
+    })
+);
 
 app.use(session({
 
@@ -31,7 +67,9 @@ app.use(session({
 
         sameSite: 'lax',
 
-        secure: false,
+        secure:
+            process.env.NODE_ENV ===
+            'production',
 
         maxAge:
             8 * 60 * 60 * 1000
@@ -48,46 +86,171 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 // AUTENTICACIÓN Y ROLES
 // =====================================
 
-function requiereAutenticacion(req, res, next) {
+async function obtenerUsuarioSesion(req) {
 
-    if (!req.session.usuario) {
+    if (
+        !req.session.usuario ||
+        !req.session.usuario.id_usuario
+    ) {
 
-        return res.status(401).json({
-            mensaje: 'Debe iniciar sesión'
-        });
+        return null;
 
     }
 
-    next();
+    const resultado =
+        await pool.query(`
+            SELECT
+                id_usuario,
+                nombre,
+                correo,
+                rol,
+                activo
+            FROM usuarios
+            WHERE id_usuario = $1
+            LIMIT 1
+        `, [
+            req.session.usuario.id_usuario
+        ]);
+
+    if (
+        resultado.rows.length === 0 ||
+        !resultado.rows[0].activo
+    ) {
+
+        return null;
+
+    }
+
+    const usuario =
+        resultado.rows[0];
+
+    req.session.usuario = {
+        id_usuario:
+            usuario.id_usuario,
+        nombre:
+            usuario.nombre,
+        correo:
+            usuario.correo,
+        rol:
+            usuario.rol
+    };
+
+    return usuario;
 
 }
 
 
-function requiereAdmin(req, res, next) {
+function responderSesionInvalida(
+    req,
+    res,
+    mensaje = 'Debe iniciar sesión'
+) {
 
-    if (!req.session.usuario) {
+    req.session.destroy(() => {
 
-        return res.status(401).json({
-            mensaje: 'Debe iniciar sesión'
+        res.clearCookie(
+            'bigcurvas.sid'
+        );
+
+        res.status(401).json({
+            mensaje
         });
 
-    }
+    });
+
+}
 
 
-    if (
-        req.session.usuario.rol !==
-        'administrador'
-    ) {
+async function requiereAutenticacion(
+    req,
+    res,
+    next
+) {
 
-        return res.status(403).json({
+    try {
+
+        const usuario =
+            await obtenerUsuarioSesion(
+                req
+            );
+
+        if (!usuario) {
+
+            return responderSesionInvalida(
+                req,
+                res
+            );
+
+        }
+
+        next();
+
+    } catch (error) {
+
+        console.error(
+            'Error al validar sesión:',
+            error
+        );
+
+        res.status(500).json({
             mensaje:
-                'No tiene permisos para realizar esta acción'
+                'Error al validar la sesión'
         });
 
     }
 
+}
 
-    next();
+
+async function requiereAdmin(
+    req,
+    res,
+    next
+) {
+
+    try {
+
+        const usuario =
+            await obtenerUsuarioSesion(
+                req
+            );
+
+        if (!usuario) {
+
+            return responderSesionInvalida(
+                req,
+                res
+            );
+
+        }
+
+        if (
+            usuario.rol !==
+            'administrador'
+        ) {
+
+            return res.status(403).json({
+                mensaje:
+                    'No tiene permisos para realizar esta acción'
+            });
+
+        }
+
+        next();
+
+    } catch (error) {
+
+        console.error(
+            'Error al validar permisos:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al validar los permisos'
+        });
+
+    }
 
 }
 
@@ -265,25 +428,47 @@ app.post('/api/auth/login', async (req, res) => {
 
 });
 
-app.get('/api/auth/me', (req, res) => {
+app.get('/api/auth/me', async (req, res) => {
 
-    if (!req.session.usuario) {
+    try {
 
-        return res.status(401).json({
-            autenticado: false
+        const usuario =
+            await obtenerUsuarioSesion(
+                req
+            );
+
+        if (!usuario) {
+
+            return responderSesionInvalida(
+                req,
+                res,
+                'Sesión no válida o usuario desactivado'
+            );
+
+        }
+
+        res.json({
+
+            autenticado: true,
+
+            usuario:
+                req.session.usuario
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al comprobar sesión:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al comprobar la sesión'
         });
 
     }
-
-
-    res.json({
-
-        autenticado: true,
-
-        usuario:
-            req.session.usuario
-
-    });
 
 });
 
