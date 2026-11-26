@@ -16,6 +16,9 @@ const resultadosClienteVenta =
 const canalVenta =
     document.getElementById('canalVenta');
 
+const estadoPagoVenta =
+    document.getElementById('estadoPagoVenta');
+
 const productoSelect =
     document.getElementById('producto');
 
@@ -1671,6 +1674,9 @@ confirmarVenta.addEventListener(
             canal:
                 canalVenta.value,
 
+            estado_pago:
+                estadoPagoVenta.value,
+
             items:
                 carrito.map(
                     item => ({
@@ -1758,6 +1764,9 @@ confirmarVenta.addEventListener(
 
                 canalVenta.value =
                     'Local';
+
+                estadoPagoVenta.value =
+                    'Pagado';
 
                 mostrarClientes();
 
