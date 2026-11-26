@@ -1141,6 +1141,7 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
     const {
         id_cliente,
         canal,
+        estado_pago,
         items
     } = req.body;
 
@@ -1179,6 +1180,28 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
         return res.status(400).json({
             mensaje:
                 'El canal de venta no es válido'
+        });
+
+    }
+
+
+    const estadoPago =
+        typeof estado_pago === 'string' &&
+        estado_pago.trim()
+            ? estado_pago.trim()
+            : 'Pagado';
+
+
+    if (
+        ![
+            'Pagado',
+            'Pendiente'
+        ].includes(estadoPago)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El estado de pago no es válido'
         });
 
     }
@@ -1468,7 +1491,7 @@ app.post('/api/ventas',requiereAutenticacion, async (req, res) => {
                 id_cliente || null,
                 idSucursalVenta,
                 canalVenta,
-                'Pagado',
+                estadoPago,
                 total
             ]);
 
