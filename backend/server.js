@@ -318,6 +318,599 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 
+// =====================================
+// ADMINISTRACIÓN DE USUARIOS
+// SOLO ADMINISTRADOR
+// =====================================
+
+app.get('/api/usuarios', requiereAdmin, async (req, res) => {
+
+    try {
+
+        const resultado = await pool.query(`
+            SELECT
+                id_usuario,
+                nombre,
+                correo,
+                rol,
+                activo
+            FROM usuarios
+            ORDER BY nombre, correo
+        `);
+
+        res.json(resultado.rows);
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener usuarios:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al obtener usuarios'
+        });
+
+    }
+
+});
+
+
+app.post('/api/usuarios', requiereAdmin, async (req, res) => {
+
+    const {
+        nombre,
+        correo,
+        password,
+        rol
+    } = req.body;
+
+    const nombreLimpio =
+        typeof nombre === 'string'
+            ? nombre.trim()
+            : '';
+
+    const correoLimpio =
+        typeof correo === 'string'
+            ? correo.trim().toLowerCase()
+            : '';
+
+    if (!nombreLimpio || !correoLimpio || !password || !rol) {
+
+        return res.status(400).json({
+            mensaje:
+                'Nombre, correo, contraseña y rol son obligatorios'
+        });
+
+    }
+
+    if (
+        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/
+            .test(correoLimpio)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El correo ingresado no es válido'
+        });
+
+    }
+
+    if (
+        ![
+            'administrador',
+            'vendedora'
+        ].includes(rol)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El rol seleccionado no es válido'
+        });
+
+    }
+
+    if (
+        typeof password !== 'string' ||
+        password.length < 8
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'La contraseña debe tener al menos 8 caracteres'
+        });
+
+    }
+
+    try {
+
+        const passwordHash =
+            await bcrypt.hash(
+                password,
+                10
+            );
+
+        const resultado =
+            await pool.query(`
+                INSERT INTO usuarios (
+                    nombre,
+                    correo,
+                    password_hash,
+                    rol,
+                    activo
+                )
+                VALUES ($1, $2, $3, $4, TRUE)
+                RETURNING
+                    id_usuario,
+                    nombre,
+                    correo,
+                    rol,
+                    activo
+            `, [
+                nombreLimpio,
+                correoLimpio,
+                passwordHash,
+                rol
+            ]);
+
+        res.status(201).json({
+            mensaje:
+                'Usuario creado correctamente',
+            usuario:
+                resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al crear usuario:',
+            error
+        );
+
+        if (error.code === '23505') {
+
+            return res.status(400).json({
+                mensaje:
+                    'El correo ingresado ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje:
+                'Error al crear usuario'
+        });
+
+    }
+
+});
+
+
+app.put('/api/usuarios/:id', requiereAdmin, async (req, res) => {
+
+    const idUsuario =
+        Number(req.params.id);
+
+    const {
+        nombre,
+        correo,
+        rol
+    } = req.body;
+
+    const nombreLimpio =
+        typeof nombre === 'string'
+            ? nombre.trim()
+            : '';
+
+    const correoLimpio =
+        typeof correo === 'string'
+            ? correo.trim().toLowerCase()
+            : '';
+
+    if (
+        !Number.isInteger(idUsuario) ||
+        idUsuario <= 0
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Usuario no válido'
+        });
+
+    }
+
+    if (!nombreLimpio || !correoLimpio || !rol) {
+
+        return res.status(400).json({
+            mensaje:
+                'Nombre, correo y rol son obligatorios'
+        });
+
+    }
+
+    if (
+        !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/
+            .test(correoLimpio)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El correo ingresado no es válido'
+        });
+
+    }
+
+    if (
+        ![
+            'administrador',
+            'vendedora'
+        ].includes(rol)
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'El rol seleccionado no es válido'
+        });
+
+    }
+
+    if (
+        idUsuario ===
+            req.session.usuario.id_usuario &&
+        rol !== 'administrador'
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'No puede quitarse a sí mismo el rol de administrador'
+        });
+
+    }
+
+    try {
+
+        const actual =
+            await pool.query(`
+                SELECT
+                    id_usuario,
+                    rol,
+                    activo
+                FROM usuarios
+                WHERE id_usuario = $1
+            `, [
+                idUsuario
+            ]);
+
+        if (
+            actual.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+                mensaje:
+                    'Usuario no encontrado'
+            });
+
+        }
+
+        const usuarioActualizado =
+            actual.rows[0];
+
+        if (
+            usuarioActualizado.rol === 'administrador' &&
+            usuarioActualizado.activo &&
+            rol !== 'administrador'
+        ) {
+
+            const adminsActivos =
+                await pool.query(`
+                    SELECT COUNT(*)::int AS cantidad
+                    FROM usuarios
+                    WHERE
+                        rol = 'administrador'
+                        AND activo = TRUE
+                `);
+
+            if (
+                adminsActivos.rows[0].cantidad <= 1
+            ) {
+
+                return res.status(400).json({
+                    mensaje:
+                        'Debe existir al menos un administrador activo'
+                });
+
+            }
+
+        }
+
+        const resultado =
+            await pool.query(`
+                UPDATE usuarios
+                SET
+                    nombre = $1,
+                    correo = $2,
+                    rol = $3
+                WHERE id_usuario = $4
+                RETURNING
+                    id_usuario,
+                    nombre,
+                    correo,
+                    rol,
+                    activo
+            `, [
+                nombreLimpio,
+                correoLimpio,
+                rol,
+                idUsuario
+            ]);
+
+        if (
+            idUsuario ===
+                req.session.usuario.id_usuario
+        ) {
+
+            req.session.usuario.nombre =
+                resultado.rows[0].nombre;
+
+            req.session.usuario.correo =
+                resultado.rows[0].correo;
+
+            req.session.usuario.rol =
+                resultado.rows[0].rol;
+
+        }
+
+        res.json({
+            mensaje:
+                'Usuario actualizado correctamente',
+            usuario:
+                resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al actualizar usuario:',
+            error
+        );
+
+        if (error.code === '23505') {
+
+            return res.status(400).json({
+                mensaje:
+                    'El correo ingresado ya está registrado'
+            });
+
+        }
+
+        res.status(500).json({
+            mensaje:
+                'Error al actualizar usuario'
+        });
+
+    }
+
+});
+
+
+app.patch('/api/usuarios/:id/estado', requiereAdmin, async (req, res) => {
+
+    const idUsuario =
+        Number(req.params.id);
+
+    const { activo } =
+        req.body;
+
+    if (
+        !Number.isInteger(idUsuario) ||
+        idUsuario <= 0 ||
+        typeof activo !== 'boolean'
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Datos de usuario no válidos'
+        });
+
+    }
+
+    if (
+        idUsuario ===
+            req.session.usuario.id_usuario &&
+        !activo
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'No puede desactivar su propia cuenta'
+        });
+
+    }
+
+    try {
+
+        const actual =
+            await pool.query(`
+                SELECT
+                    id_usuario,
+                    nombre,
+                    rol,
+                    activo
+                FROM usuarios
+                WHERE id_usuario = $1
+            `, [
+                idUsuario
+            ]);
+
+        if (
+            actual.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+                mensaje:
+                    'Usuario no encontrado'
+            });
+
+        }
+
+        const usuario =
+            actual.rows[0];
+
+        if (
+            usuario.rol === 'administrador' &&
+            usuario.activo &&
+            !activo
+        ) {
+
+            const adminsActivos =
+                await pool.query(`
+                    SELECT COUNT(*)::int AS cantidad
+                    FROM usuarios
+                    WHERE
+                        rol = 'administrador'
+                        AND activo = TRUE
+                `);
+
+            if (
+                adminsActivos.rows[0].cantidad <= 1
+            ) {
+
+                return res.status(400).json({
+                    mensaje:
+                        'Debe existir al menos un administrador activo'
+                });
+
+            }
+
+        }
+
+        const resultado =
+            await pool.query(`
+                UPDATE usuarios
+                SET activo = $1
+                WHERE id_usuario = $2
+                RETURNING
+                    id_usuario,
+                    nombre,
+                    correo,
+                    rol,
+                    activo
+            `, [
+                activo,
+                idUsuario
+            ]);
+
+        res.json({
+            mensaje:
+                activo
+                    ? 'Usuario reactivado correctamente'
+                    : 'Usuario desactivado correctamente',
+            usuario:
+                resultado.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al cambiar estado del usuario:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al cambiar el estado del usuario'
+        });
+
+    }
+
+});
+
+
+app.patch('/api/usuarios/:id/password', requiereAdmin, async (req, res) => {
+
+    const idUsuario =
+        Number(req.params.id);
+
+    const { password } =
+        req.body;
+
+    if (
+        !Number.isInteger(idUsuario) ||
+        idUsuario <= 0
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'Usuario no válido'
+        });
+
+    }
+
+    if (
+        typeof password !== 'string' ||
+        password.length < 8
+    ) {
+
+        return res.status(400).json({
+            mensaje:
+                'La contraseña debe tener al menos 8 caracteres'
+        });
+
+    }
+
+    try {
+
+        const passwordHash =
+            await bcrypt.hash(
+                password,
+                10
+            );
+
+        const resultado =
+            await pool.query(`
+                UPDATE usuarios
+                SET password_hash = $1
+                WHERE id_usuario = $2
+                RETURNING id_usuario
+            `, [
+                passwordHash,
+                idUsuario
+            ]);
+
+        if (
+            resultado.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+                mensaje:
+                    'Usuario no encontrado'
+            });
+
+        }
+
+        res.json({
+            mensaje:
+                'Contraseña actualizada correctamente'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Error al cambiar contraseña:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al cambiar la contraseña'
+        });
+
+    }
+
+});
+
+
 // Ruta para obtener el inventario
 app.get('/api/inventario',requiereAutenticacion, async (req, res) => {
 
