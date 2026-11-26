@@ -31,169 +31,215 @@
     <main class="dashboard">
 
         <h1>Clientes</h1>
-        <p>Registro y administración de clientes</p>
+        <p>Registro y administración de clientes de Bigcurvas.</p>
 
 
-        <!-- AGREGAR CLIENTE -->
+        <section class="cliente-form-card">
 
-        <section class="productos-grid">
+            <div class="cliente-form-header">
+                <div>
+                    <h2>Agregar cliente</h2>
+                    <p>El nombre es obligatorio. Los demás datos son opcionales.</p>
+                </div>
+            </div>
 
-            <div class="producto-form-container">
+            <form id="clienteForm">
 
-                <h2>Agregar cliente</h2>
+                <div class="cliente-form-grid">
 
-                <form id="clienteForm" class="venta-form">
+                    <div>
+                        <label for="nombreCliente">
+                            Nombre *
+                        </label>
 
-                    <label for="nombreCliente">
-                        Nombre
-                    </label>
+                        <input
+                            type="text"
+                            id="nombreCliente"
+                            maxlength="100"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
 
-                    <input
-                        type="text"
-                        id="nombreCliente"
-                        required
-                    >
+                    <div>
+                        <label for="rutCliente">
+                            RUT
+                        </label>
 
+                        <input
+                            type="text"
+                            id="rutCliente"
+                            maxlength="12"
+                            placeholder="Ej: 12.345.678-9"
+                            autocomplete="off"
+                        >
+                    </div>
 
-                    <label for="rutCliente">
-                        RUT
-                    </label>
+                    <div>
+                        <label for="telefonoCliente">
+                            Teléfono
+                        </label>
 
-                    <input
-                        type="text"
-                        id="rutCliente"
-                        placeholder="Ej: 12.345.678-9"
-                    >
+                        <input
+                            type="tel"
+                            id="telefonoCliente"
+                            maxlength="30"
+                            placeholder="Ej: +56 9 1234 5678"
+                            autocomplete="tel"
+                        >
+                    </div>
 
+                    <div>
+                        <label for="correoCliente">
+                            Correo
+                        </label>
 
-                    <label for="telefonoCliente">
-                        Teléfono
-                    </label>
+                        <input
+                            type="email"
+                            id="correoCliente"
+                            maxlength="120"
+                            placeholder="Ej: cliente@correo.cl"
+                            autocomplete="email"
+                        >
+                    </div>
 
-                    <input
-                        type="text"
-                        id="telefonoCliente"
-                    >
+                    <div>
+                        <label for="direccionCliente">
+                            Dirección
+                        </label>
 
+                        <input
+                            type="text"
+                            id="direccionCliente"
+                            maxlength="150"
+                            autocomplete="street-address"
+                        >
+                    </div>
 
-                    <label for="correoCliente">
-                        Correo
-                    </label>
+                    <div>
+                        <label for="comunaCliente">
+                            Comuna
+                        </label>
 
-                    <input
-                        type="email"
-                        id="correoCliente"
-                    >
+                        <input
+                            type="text"
+                            id="comunaCliente"
+                            maxlength="80"
+                            autocomplete="address-level2"
+                        >
+                    </div>
 
+                </div>
 
-                    <label for="direccionCliente">
-                        Dirección
-                    </label>
-
-                    <input
-                        type="text"
-                        id="direccionCliente"
-                    >
-
-
-                    <label for="comunaCliente">
-                        Comuna
-                    </label>
-
-                    <input
-                        type="text"
-                        id="comunaCliente"
-                    >
-
-
+                <div class="cliente-form-acciones">
                     <button type="submit">
                         Agregar cliente
                     </button>
+                </div>
 
-                </form>
+            </form>
 
-                <p id="mensajeCliente"></p>
-
-            </div>
+            <p
+                id="mensajeCliente"
+                class="mensaje-formulario"
+            ></p>
 
         </section>
 
 
-        <!-- EDITAR CLIENTE -->
-
         <section
             id="editarClienteSection"
-            class="productos-grid"
+            class="cliente-form-card"
             hidden
         >
 
-            <div class="producto-form-container">
+            <div class="cliente-form-header">
+                <div>
+                    <h2>Editar cliente</h2>
+                    <p>Actualiza los datos del cliente seleccionado.</p>
+                </div>
+            </div>
 
-                <h2>Editar cliente</h2>
+            <form id="editarClienteForm">
 
-                <form id="editarClienteForm" class="venta-form">
+                <div class="cliente-form-grid">
 
-                    <label for="editarNombreCliente">
-                        Nombre
-                    </label>
+                    <div>
+                        <label for="editarNombreCliente">
+                            Nombre *
+                        </label>
 
-                    <input
-                        type="text"
-                        id="editarNombreCliente"
-                        required
-                    >
+                        <input
+                            type="text"
+                            id="editarNombreCliente"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
 
+                    <div>
+                        <label for="editarRutCliente">
+                            RUT
+                        </label>
 
-                    <label for="editarRutCliente">
-                        RUT
-                    </label>
+                        <input
+                            type="text"
+                            id="editarRutCliente"
+                            maxlength="12"
+                        >
+                    </div>
 
-                    <input
-                        type="text"
-                        id="editarRutCliente"
-                    >
+                    <div>
+                        <label for="editarTelefonoCliente">
+                            Teléfono
+                        </label>
 
+                        <input
+                            type="tel"
+                            id="editarTelefonoCliente"
+                            maxlength="30"
+                        >
+                    </div>
 
-                    <label for="editarTelefonoCliente">
-                        Teléfono
-                    </label>
+                    <div>
+                        <label for="editarCorreoCliente">
+                            Correo
+                        </label>
 
-                    <input
-                        type="text"
-                        id="editarTelefonoCliente"
-                    >
+                        <input
+                            type="email"
+                            id="editarCorreoCliente"
+                            maxlength="120"
+                        >
+                    </div>
 
+                    <div>
+                        <label for="editarDireccionCliente">
+                            Dirección
+                        </label>
 
-                    <label for="editarCorreoCliente">
-                        Correo
-                    </label>
+                        <input
+                            type="text"
+                            id="editarDireccionCliente"
+                            maxlength="150"
+                        >
+                    </div>
 
-                    <input
-                        type="email"
-                        id="editarCorreoCliente"
-                    >
+                    <div>
+                        <label for="editarComunaCliente">
+                            Comuna
+                        </label>
 
+                        <input
+                            type="text"
+                            id="editarComunaCliente"
+                            maxlength="80"
+                        >
+                    </div>
 
-                    <label for="editarDireccionCliente">
-                        Dirección
-                    </label>
+                </div>
 
-                    <input
-                        type="text"
-                        id="editarDireccionCliente"
-                    >
-
-
-                    <label for="editarComunaCliente">
-                        Comuna
-                    </label>
-
-                    <input
-                        type="text"
-                        id="editarComunaCliente"
-                    >
-
-
+                <div class="cliente-form-acciones">
                     <button type="submit">
                         Guardar cambios
                     </button>
@@ -201,43 +247,104 @@
                     <button
                         type="button"
                         id="cancelarCliente"
+                        class="boton-secundario"
                     >
                         Cancelar
                     </button>
+                </div>
 
-                </form>
+            </form>
 
-                <p id="mensajeEdicionCliente"></p>
-
-            </div>
+            <p
+                id="mensajeEdicionCliente"
+                class="mensaje-formulario"
+            ></p>
 
         </section>
 
 
-        <!-- TABLA -->
+        <section class="filtros-clientes">
 
-        <h2 class="titulo-tabla">
-            Clientes registrados
-        </h2>
+            <div class="campo-filtro campo-filtro-busqueda">
 
-        <table class="inventory-table">
+                <label for="buscarCliente">
+                    Buscar cliente
+                </label>
 
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>RUT</th>
-                    <th>Teléfono</th>
-                    <th>Correo</th>
-                    <th>Comuna</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+                <input
+                    type="search"
+                    id="buscarCliente"
+                    placeholder="Nombre, RUT, teléfono, correo o comuna"
+                    autocomplete="off"
+                >
 
-            <tbody id="tablaClientes">
-            </tbody>
+            </div>
 
-        </table>
+            <div class="campo-filtro">
+
+                <label for="filtroEstadoCliente">
+                    Estado
+                </label>
+
+                <select id="filtroEstadoCliente">
+                    <option value="">
+                        Todos
+                    </option>
+                    <option value="activo">
+                        Activos
+                    </option>
+                    <option value="inactivo">
+                        Inactivos
+                    </option>
+                </select>
+
+            </div>
+
+            <button
+                type="button"
+                id="limpiarFiltrosClientes"
+                class="boton-secundario"
+            >
+                Limpiar filtros
+            </button>
+
+        </section>
+
+
+        <div class="encabezado-listado-clientes">
+
+            <div>
+                <h2>Clientes registrados</h2>
+                <p id="contadorClientes">
+                    0 clientes
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="tabla-responsive">
+
+            <table class="inventory-table tabla-clientes">
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RUT</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Comuna</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaClientes">
+                </tbody>
+
+            </table>
+
+        </div>
 
     </main>
 
