@@ -44,15 +44,29 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
 - Búsqueda de ventas por número de venta o cliente.
 - Resumen de cantidad de ventas y total vendido según los filtros.
 - Detalle de venta con productos, variantes, cantidades, subtotales y total.
-- Gestión de clientes.
+- Gestión de clientes con buscador, filtro por estado y validación de RUT/correo.
 - Activación y desactivación de productos y clientes.
+- Administración de usuarios:
+  - Crear cuentas.
+  - Editar nombre, correo y rol.
+  - Activar o desactivar cuentas.
+  - Cambiar contraseñas.
+- Protección para mantener al menos un administrador activo.
 - Reportes con filtros por:
-  - Fecha
-  - Sucursal
-  - Categoría
+  - Fecha.
+  - Sucursal.
+  - Categoría.
+  - Usuario que registró la venta.
+- Filtros rápidos de reportes:
+  - Hoy.
+  - Últimos 7 días.
+  - Este mes.
+  - Todo.
+- Reporte de stock crítico.
 - Indicadores de ventas.
 - Gráficos con Chart.js.
 - Exportación de reportes a PDF y Excel.
+- Sesiones que validan en base de datos si el usuario sigue activo y conserva sus permisos.
 - Cierre de sesión.
 - Interfaz responsive con diseño unificado.
 
@@ -76,7 +90,10 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
 | Activar / desactivar clientes | ✅ | ❌ |
 | Ver historial de ventas | ✅ | ✅ |
 | Generar reportes | ✅ | ✅ |
+| Ver reportes de todos los usuarios | ✅ | ❌ |
 | Exportar PDF / Excel | ✅ | ✅ |
+| Administrar usuarios | ✅ | ❌ |
+| Cambiar contraseñas de usuarios | ✅ | ❌ |
 
 ---
 
@@ -135,6 +152,7 @@ Bigcurvas/
 │   │   ├── productos.js
 │   │   ├── reportes.js
 │   │   ├── sesion.js
+│   │   ├── usuarios.js
 │   │   └── ventas.js
 │   ├── clientes.html
 │   ├── dashboard.html
@@ -143,11 +161,17 @@ Bigcurvas/
 │   ├── inventario.html
 │   ├── productos.html
 │   ├── reportes.html
+│   ├── usuarios.html
 │   └── ventas.html
 │
+├── scripts/
+│   └── verificar-sintaxis.js
+│
 ├── .env
+├── .env.example
 ├── .gitignore
 ├── package.json
+├── PRUEBAS.md
 └── README.md
 ```
 
@@ -290,6 +314,12 @@ vendedora
 Desde la raíz del proyecto:
 
 ```powershell
+npm start
+```
+
+También se puede ejecutar directamente con:
+
+```powershell
 node backend/server.js
 ```
 
@@ -331,19 +361,26 @@ Las ventas se almacenan junto con sus detalles y el stock se descuenta dentro de
 
 ---
 
+# Pruebas
+
+El repositorio incluye `PRUEBAS.md` con una lista de comprobación funcional y de permisos para Administrador y Vendedora.
+
+También se puede ejecutar una verificación automática de sintaxis con:
+
+```powershell
+npm test
+```
+
+---
+
 # Pendientes y mejoras futuras
 
-El sistema ya cubre el flujo principal de inventario, productos, clientes, ventas, historial y reportes. Entre las mejoras que todavía se pueden incorporar se encuentran:
+El sistema ya cubre el flujo principal de inventario, productos, clientes, ventas, historial, usuarios y reportes. Entre las mejoras que todavía se pueden incorporar se encuentran:
 
-- Buscador y filtros adicionales en el módulo de clientes.
 - Edición de variantes existentes desde la interfaz.
-- Filtros rápidos en reportes.
-- Reportes adicionales por vendedora y stock crítico.
 - Gestión más completa de estados o métodos de pago.
-- Administración de usuarios desde la interfaz.
-- Cambio de contraseña desde el sistema.
-- Mejoras adicionales de validación y seguridad.
-- Pruebas automatizadas.
+- Pruebas automatizadas de integración con una base de datos de prueba.
+- Endurecimiento adicional para un despliegue público, por ejemplo protección CSRF y almacenamiento persistente de sesiones.
 - Preparación para despliegue en un entorno de producción.
 - Integración con WooCommerce para sincronizar ventas y stock del canal online.
 
