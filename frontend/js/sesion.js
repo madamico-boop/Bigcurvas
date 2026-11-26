@@ -108,6 +108,71 @@ async function cerrarSesion() {
 
 
 // =====================================
+// ENLACE DE USUARIOS
+// SOLO ADMINISTRADOR
+// =====================================
+
+function agregarEnlaceUsuarios(usuario) {
+
+    const nav =
+        document.querySelector(
+            '.sidebar nav'
+        );
+
+    if (!nav) {
+
+        return;
+
+    }
+
+    const existente =
+        document.getElementById(
+            'enlaceUsuarios'
+        );
+
+    if (
+        usuario.rol !==
+        'administrador'
+    ) {
+
+        if (existente) {
+
+            existente.remove();
+
+        }
+
+        return;
+
+    }
+
+    if (existente) {
+
+        return;
+
+    }
+
+    const enlace =
+        document.createElement(
+            'a'
+        );
+
+    enlace.id =
+        'enlaceUsuarios';
+
+    enlace.href =
+        'usuarios.html';
+
+    enlace.textContent =
+        'Usuarios';
+
+    nav.appendChild(
+        enlace
+    );
+
+}
+
+
+// =====================================
 // AGREGAR BOTÓN AL SIDEBAR
 // =====================================
 
@@ -186,6 +251,10 @@ async function iniciarSesionGeneral() {
 
     }
 
+
+    agregarEnlaceUsuarios(
+        usuario
+    );
 
     agregarBotonCerrarSesion();
 
