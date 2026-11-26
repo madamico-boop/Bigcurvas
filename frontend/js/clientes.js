@@ -94,11 +94,90 @@ function mostrarMensaje(
 
 function limpiarRut(rut) {
 
-    return rut
-        .replaceAll('.', '')
-        .replaceAll('-', '')
-        .replaceAll(' ', '')
-        .toUpperCase();
+    return String(rut || '')
+        .replace(/[^0-9kK]/g, '')
+        .toUpperCase()
+        .slice(0, 9);
+
+}
+
+
+function formatearRut(rut) {
+
+    const limpio =
+        limpiarRut(rut);
+
+    if (
+        limpio.length < 2
+    ) {
+
+        return limpio;
+
+    }
+
+    const cuerpo =
+        limpio.slice(0, -1);
+
+    const digito =
+        limpio.slice(-1);
+
+    const cuerpoFormateado =
+        cuerpo.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            '.'
+        );
+
+    return (
+        cuerpoFormateado +
+        '-' +
+        digito
+    );
+
+}
+
+
+function prepararCampoRut(
+    elemento
+) {
+
+    elemento.addEventListener(
+        'input',
+        () => {
+
+            const limpio =
+                limpiarRut(
+                    elemento.value
+                );
+
+            elemento.value =
+                limpio;
+
+        }
+    );
+
+    elemento.addEventListener(
+        'blur',
+        () => {
+
+            elemento.value =
+                formatearRut(
+                    elemento.value
+                );
+
+        }
+    );
+
+    elemento.addEventListener(
+        'focus',
+        () => {
+
+            elemento.value =
+                limpiarRut(
+                    elemento.value
+                );
+
+        }
+    );
 
 }
 
@@ -239,8 +318,10 @@ function leerClienteFormulario(
                 id('nombreCliente')
             ),
         rut:
-            obtenerValor(
-                id('rutCliente')
+            formatearRut(
+                obtenerValor(
+                    id('rutCliente')
+                )
             ),
         telefono:
             obtenerValor(
@@ -624,8 +705,10 @@ function abrirEdicion(cliente) {
             'editarRutCliente'
         )
         .value =
-            cliente.rut ||
-            '';
+            formatearRut(
+                cliente.rut ||
+                ''
+            );
 
     document
         .getElementById(
@@ -1024,6 +1107,23 @@ limpiarFiltrosClientes
 
         }
     );
+
+
+// =====================================
+// FORMATO AUTOMÁTICO DE RUT
+// =====================================
+
+prepararCampoRut(
+    document.getElementById(
+        'rutCliente'
+    )
+);
+
+prepararCampoRut(
+    document.getElementById(
+        'editarRutCliente'
+    )
+);
 
 
 // =====================================
