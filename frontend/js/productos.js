@@ -72,7 +72,26 @@ const tablaVariantesProducto =
 const cerrarVariantesProducto =
     document.getElementById('cerrarVariantesProducto');
 
+const editarVarianteSection =
+    document.getElementById('editarVarianteSection');
+
+const editarVarianteForm =
+    document.getElementById('editarVarianteForm');
+
+const editarVarianteProductoNombre =
+    document.getElementById('editarVarianteProductoNombre');
+
+const cancelarEdicionVariante =
+    document.getElementById('cancelarEdicionVariante');
+
+const mensajeEdicionVariante =
+    document.getElementById('mensajeEdicionVariante');
+
 let productoEditandoId = null;
+
+let varianteEditandoId = null;
+
+let productoVariantesActual = null;
 
 let usuarioActual = null;
 
@@ -181,6 +200,9 @@ function aplicarPermisos() {
         true;
 
     editarProductoSection.hidden =
+        true;
+
+    editarVarianteSection.hidden =
         true;
 
 }
@@ -402,12 +424,15 @@ function aplicarFiltrosProductos() {
 
 async function mostrarVariantesProducto(producto) {
 
+    productoVariantesActual =
+        producto;
+
     productoVariantesSeleccionado
         .textContent =
             producto.nombre;
 
     tablaVariantesProducto.innerHTML =
-        '<tr><td colspan="5" class="sin-resultados">Cargando variantes...</td></tr>';
+        '<tr><td colspan="6" class="sin-resultados">Cargando variantes...</td></tr>';
 
     variantesProductoSection.hidden =
         false;
@@ -444,7 +469,7 @@ async function mostrarVariantesProducto(producto) {
         if (!respuesta.ok) {
 
             tablaVariantesProducto.innerHTML =
-                '<tr><td colspan="5" class="sin-resultados">' +
+                '<tr><td colspan="6" class="sin-resultados">' +
                 escaparHtml(
                     variantes.mensaje ||
                     'Error al cargar variantes'
@@ -458,7 +483,7 @@ async function mostrarVariantesProducto(producto) {
         if (variantes.length === 0) {
 
             tablaVariantesProducto.innerHTML =
-                '<tr><td colspan="5" class="sin-resultados">Este producto todavía no tiene variantes registradas.</td></tr>';
+                '<tr><td colspan="6" class="sin-resultados">Este producto todavía no tiene variantes registradas.</td></tr>';
 
             return;
 
@@ -472,6 +497,15 @@ async function mostrarVariantesProducto(producto) {
             const fila =
                 document.createElement('tr');
 
+            const accion =
+                esAdministrador()
+                    ? (
+                        '<button type="button" class="boton-editar-variante">' +
+                            'Editar' +
+                        '</button>'
+                    )
+                    : '-';
+
             fila.innerHTML =
                 '<td>' +
                     escaparHtml(variante.color) +
@@ -483,14 +517,34 @@ async function mostrarVariantesProducto(producto) {
                     escaparHtml(variante.sku || '-') +
                 '</td>' +
                 '<td>' +
-                    variante.stock_rancagua +
+                    escaparHtml(variante.stock_rancagua) +
                 '</td>' +
                 '<td>' +
-                    variante.stock_bodega +
+                    escaparHtml(variante.stock_bodega) +
+                '</td>' +
+                '<td>' +
+                    accion +
                 '</td>';
 
             tablaVariantesProducto
                 .appendChild(fila);
+
+            if (
+                esAdministrador()
+            ) {
+
+                fila.querySelector(
+                    '.boton-editar-variante'
+                ).addEventListener(
+                    'click',
+                    () =>
+                        abrirEdicionVariante(
+                            variante,
+                            producto
+                        )
+                );
+
+            }
 
         });
 
@@ -502,9 +556,99 @@ async function mostrarVariantesProducto(producto) {
         );
 
         tablaVariantesProducto.innerHTML =
-            '<tr><td colspan="5" class="sin-resultados">Error al cargar variantes.</td></tr>';
+            '<tr><td colspan="6" class="sin-resultados">Error al cargar variantes.</td></tr>';
 
     }
+
+}
+
+
+function abrirEdicionVariante(
+    variante,
+    producto
+) {
+
+    if (!esAdministrador()) {
+
+        return;
+
+    }
+
+    varianteEditandoId =
+        variante.id_variante;
+
+    editarVarianteProductoNombre
+        .textContent =
+            producto.nombre;
+
+    document
+        .getElementById(
+            'editarColorVariante'
+        )
+        .value =
+            variante.color ||
+            '';
+
+    document
+        .getElementById(
+            'editarTallaVariante'
+        )
+        .value =
+            variante.talla ||
+            '';
+
+    document
+        .getElementById(
+            'editarSkuVariante'
+        )
+        .value =
+            variante.sku ||
+            '';
+
+    document
+        .getElementById(
+            'editarStockRancagua'
+        )
+        .value =
+            variante.stock_rancagua;
+
+    document
+        .getElementById(
+            'editarMinimoRancagua'
+        )
+        .value =
+            variante.minimo_rancagua ??
+            '';
+
+    document
+        .getElementById(
+            'editarStockBodega'
+        )
+        .value =
+            variante.stock_bodega;
+
+    document
+        .getElementById(
+            'editarMinimoBodega'
+        )
+        .value =
+            variante.minimo_bodega ??
+            '';
+
+    mensajeEdicionVariante
+        .textContent =
+            '';
+
+    editarVarianteSection.hidden =
+        false;
+
+    editarVarianteSection
+        .scrollIntoView({
+            behavior:
+                'smooth',
+            block:
+                'start'
+        });
 
 }
 
@@ -868,8 +1012,193 @@ cerrarVariantesProducto.addEventListener(
         productoVariantesSeleccionado
             .textContent = '';
 
+        productoVariantesActual =
+            null;
+
     }
 );
+
+// =====================================
+// EDITAR VARIANTE
+// =====================================
+
+editarVarianteForm.addEventListener(
+    'submit',
+    async event => {
+
+        event.preventDefault();
+
+        if (
+            !esAdministrador() ||
+            !varianteEditandoId
+        ) {
+
+            return;
+
+        }
+
+        const datos = {
+            color:
+                document
+                    .getElementById(
+                        'editarColorVariante'
+                    )
+                    .value
+                    .trim(),
+
+            talla:
+                document
+                    .getElementById(
+                        'editarTallaVariante'
+                    )
+                    .value
+                    .trim(),
+
+            sku:
+                document
+                    .getElementById(
+                        'editarSkuVariante'
+                    )
+                    .value
+                    .trim(),
+
+            stock_rancagua:
+                Number(
+                    document
+                        .getElementById(
+                            'editarStockRancagua'
+                        )
+                        .value
+                ),
+
+            minimo_rancagua:
+                document
+                    .getElementById(
+                        'editarMinimoRancagua'
+                    )
+                    .value,
+
+            stock_bodega:
+                Number(
+                    document
+                        .getElementById(
+                            'editarStockBodega'
+                        )
+                        .value
+                ),
+
+            minimo_bodega:
+                document
+                    .getElementById(
+                        'editarMinimoBodega'
+                    )
+                    .value
+        };
+
+        if (
+            !datos.color ||
+            !datos.talla
+        ) {
+
+            mensajeEdicionVariante
+                .textContent =
+                    'Color y talla son obligatorios.';
+
+            return;
+
+        }
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    '/api/variantes/' +
+                    varianteEditandoId,
+                    {
+                        method:
+                            'PUT',
+                        credentials:
+                            'include',
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+                        body:
+                            JSON.stringify(
+                                datos
+                            )
+                    }
+                );
+
+            const resultado =
+                await respuesta.json();
+
+            mensajeEdicionVariante
+                .textContent =
+                    resultado.mensaje;
+
+            if (
+                respuesta.ok
+            ) {
+
+                varianteEditandoId =
+                    null;
+
+                editarVarianteForm
+                    .reset();
+
+                editarVarianteSection.hidden =
+                    true;
+
+                if (
+                    productoVariantesActual
+                ) {
+
+                    await mostrarVariantesProducto(
+                        productoVariantesActual
+                    );
+
+                }
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Error al editar variante:',
+                error
+            );
+
+            mensajeEdicionVariante
+                .textContent =
+                    'Error al editar variante.';
+
+        }
+
+    }
+);
+
+
+cancelarEdicionVariante.addEventListener(
+    'click',
+    () => {
+
+        varianteEditandoId =
+            null;
+
+        editarVarianteForm
+            .reset();
+
+        editarVarianteSection.hidden =
+            true;
+
+        mensajeEdicionVariante
+            .textContent =
+                '';
+
+    }
+);
+
 
 // =====================================
 // AGREGAR PRODUCTO
@@ -1322,6 +1651,9 @@ cancelarEdicion.addEventListener(
 async function iniciar() {
 
     editarProductoSection.hidden =
+        true;
+
+    editarVarianteSection.hidden =
         true;
 
 
