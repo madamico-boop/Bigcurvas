@@ -391,6 +391,152 @@
         </section>
 
         <!-- ===================================== -->
+        <!-- EDITAR VARIANTE - SOLO ADMIN -->
+        <!-- ===================================== -->
+
+        <section
+            id="editarVarianteSection"
+            class="productos-grid"
+            hidden
+        >
+
+            <div class="producto-form-container">
+
+                <h2>
+                    Editar variante
+                </h2>
+
+                <p
+                    id="editarVarianteProductoNombre"
+                    class="texto-secundario-form"
+                ></p>
+
+                <form
+                    id="editarVarianteForm"
+                    class="venta-form"
+                >
+
+                    <label for="editarColorVariante">
+                        Color
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarColorVariante"
+                        required
+                    >
+
+
+                    <label for="editarTallaVariante">
+                        Talla
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarTallaVariante"
+                        required
+                    >
+
+
+                    <label for="editarSkuVariante">
+                        SKU (opcional)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editarSkuVariante"
+                    >
+
+
+                    <div class="editar-variante-stock-grid">
+
+                        <div class="editar-variante-sucursal">
+
+                            <h3>Rancagua</h3>
+
+                            <label for="editarStockRancagua">
+                                Stock actual
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editarStockRancagua"
+                                min="0"
+                                required
+                            >
+
+                            <label for="editarMinimoRancagua">
+                                Stock mínimo (opcional)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editarMinimoRancagua"
+                                min="0"
+                            >
+
+                        </div>
+
+
+                        <div class="editar-variante-sucursal">
+
+                            <h3>Bodega</h3>
+
+                            <label for="editarStockBodega">
+                                Stock actual
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editarStockBodega"
+                                min="0"
+                                required
+                            >
+
+                            <label for="editarMinimoBodega">
+                                Stock mínimo (opcional)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editarMinimoBodega"
+                                min="0"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="acciones-formulario-inline">
+
+                        <button type="submit">
+                            Guardar variante
+                        </button>
+
+                        <button
+                            type="button"
+                            id="cancelarEdicionVariante"
+                            class="boton-secundario"
+                        >
+                            Cancelar
+                        </button>
+
+                    </div>
+
+                </form>
+
+                <p
+                    id="mensajeEdicionVariante"
+                    class="mensaje-formulario"
+                ></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================================== -->
         <!-- LISTADO DE PRODUCTOS -->
         <!-- ADMIN Y VENDEDORA -->
         <!-- ===================================== -->
@@ -489,6 +635,7 @@
                             <th>SKU</th>
                             <th>Stock Rancagua</th>
                             <th>Stock Bodega</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
 
