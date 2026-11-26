@@ -2177,3 +2177,55 @@ form {
         width: 100%;
     }
 }
+
+/* =========================================
+   EDICIÓN DE VARIANTES
+========================================= */
+
+.texto-secundario-form {
+    margin: 6px 0 16px;
+    font-size: 13px;
+}
+
+.editar-variante-stock-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.editar-variante-sucursal {
+    padding: 16px;
+    border: 1px solid var(--color-borde);
+    border-radius: 10px;
+    background-color: #faf8f9;
+}
+
+.editar-variante-sucursal h3 {
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.acciones-formulario-inline {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.boton-editar-variante {
+    background-color: var(--color-principal);
+}
+
+@media (max-width: 700px) {
+    .editar-variante-stock-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .acciones-formulario-inline {
+        flex-direction: column;
+    }
+
+    .acciones-formulario-inline button {
+        width: 100%;
+    }
+}
