@@ -25,6 +25,7 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
 - Buscador y filtros de productos por categoría y estado.
 - Variantes por talla y color.
 - Consulta de variantes existentes con stock de Rancagua y Bodega.
+- Edición de variantes existentes, incluyendo talla, color, SKU y stock por sucursal.
 - SKU opcional por variante.
 - Stock actual y stock mínimo por sucursal.
 - Estados de inventario:
@@ -38,9 +39,10 @@ El sistema se encuentra funcional en entorno local y cuenta con autenticación, 
 - Validación de stock disponible antes de confirmar una venta.
 - Una misma venta utiliza una única sucursal.
 - Selección de canal de venta: Local u Online.
+- Selección de estado de pago: Pagado o Pendiente.
 - Descuento automático de stock al confirmar una venta.
 - Cliente opcional en una venta.
-- Historial de ventas con filtros por fecha, sucursal, cliente y canal.
+- Historial de ventas con filtros por fecha, sucursal, cliente, canal y estado de pago.
 - Búsqueda de ventas por número de venta o cliente.
 - Resumen de cantidad de ventas y total vendido según los filtros.
 - Detalle de venta con productos, variantes, cantidades, subtotales y total.
@@ -377,8 +379,7 @@ npm test
 
 El sistema ya cubre el flujo principal de inventario, productos, clientes, ventas, historial, usuarios y reportes. Entre las mejoras que todavía se pueden incorporar se encuentran:
 
-- Edición de variantes existentes desde la interfaz.
-- Gestión más completa de estados o métodos de pago.
+- Gestión de métodos de pago si se requiere mayor detalle contable.
 - Pruebas automatizadas de integración con una base de datos de prueba.
 - Endurecimiento adicional para un despliegue público, por ejemplo protección CSRF y almacenamiento persistente de sesiones.
 - Preparación para despliegue en un entorno de producción.
