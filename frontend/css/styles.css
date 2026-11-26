@@ -1241,6 +1241,13 @@ form {
     margin-bottom: 0;
 }
 
+.admin-productos-columna {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    min-width: 0;
+}
+
 .admin-productos-grid .producto-form-container {
     max-width: none;
 }
