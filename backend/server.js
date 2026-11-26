@@ -2611,22 +2611,71 @@ app.get('/api/sucursales',requiereAutenticacion, async (req, res) => {
 
 });
 
-app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
+app.get('/api/reportes/vendedores', requiereAutenticacion, async (req, res) => {
+
+    try {
+
+        if (
+            req.session.usuario.rol !==
+            'administrador'
+        ) {
+
+            return res.json([
+                {
+                    id_usuario:
+                        req.session.usuario.id_usuario,
+                    nombre:
+                        req.session.usuario.nombre
+                }
+            ]);
+
+        }
+
+        const resultado =
+            await pool.query(`
+                SELECT
+                    id_usuario,
+                    nombre
+                FROM usuarios
+                WHERE activo = TRUE
+                ORDER BY nombre
+            `);
+
+        res.json(
+            resultado.rows
+        );
+
+    } catch (error) {
+
+        console.error(
+            'Error al obtener usuarios para reportes:',
+            error
+        );
+
+        res.status(500).json({
+            mensaje:
+                'Error al obtener usuarios para reportes'
+        });
+
+    }
+
+});
+
+
+app.get('/api/reportes', requiereAutenticacion, async (req, res) => {
 
     const {
         desde,
         hasta,
         id_sucursal,
-        id_categoria
+        id_categoria,
+        id_usuario
     } = req.query;
-
 
     try {
 
         const condiciones = [];
-
         const valores = [];
-
 
         if (desde) {
 
@@ -2638,7 +2687,6 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
 
         }
 
-
         if (hasta) {
 
             valores.push(hasta);
@@ -2649,11 +2697,25 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
 
         }
 
-
         if (id_sucursal) {
 
+            const idSucursal =
+                Number(id_sucursal);
+
+            if (
+                !Number.isInteger(idSucursal) ||
+                idSucursal <= 0
+            ) {
+
+                return res.status(400).json({
+                    mensaje:
+                        'La sucursal seleccionada no es válida'
+                });
+
+            }
+
             valores.push(
-                Number(id_sucursal)
+                idSucursal
             );
 
             condiciones.push(
@@ -2662,11 +2724,25 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
 
         }
 
-
         if (id_categoria) {
 
+            const idCategoria =
+                Number(id_categoria);
+
+            if (
+                !Number.isInteger(idCategoria) ||
+                idCategoria <= 0
+            ) {
+
+                return res.status(400).json({
+                    mensaje:
+                        'La categoría seleccionada no es válida'
+                });
+
+            }
+
             valores.push(
-                Number(id_categoria)
+                idCategoria
             );
 
             condiciones.push(
@@ -2675,12 +2751,54 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
 
         }
 
+        if (
+            req.session.usuario.rol ===
+            'administrador'
+        ) {
+
+            if (id_usuario) {
+
+                const idUsuario =
+                    Number(id_usuario);
+
+                if (
+                    !Number.isInteger(idUsuario) ||
+                    idUsuario <= 0
+                ) {
+
+                    return res.status(400).json({
+                        mensaje:
+                            'El usuario seleccionado no es válido'
+                    });
+
+                }
+
+                valores.push(
+                    idUsuario
+                );
+
+                condiciones.push(
+                    `ve.id_usuario = $${valores.length}`
+                );
+
+            }
+
+        } else {
+
+            valores.push(
+                req.session.usuario.id_usuario
+            );
+
+            condiciones.push(
+                `ve.id_usuario = $${valores.length}`
+            );
+
+        }
 
         const where =
             condiciones.length > 0
                 ? `WHERE ${condiciones.join(' AND ')}`
                 : '';
-
 
         const desdeTablas = `
             FROM detalle_venta d
@@ -2700,75 +2818,62 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
             JOIN sucursales s
                 ON ve.id_sucursal = s.id_sucursal
 
+            JOIN usuarios u
+                ON ve.id_usuario = u.id_usuario
+
             LEFT JOIN clientes cl
                 ON ve.id_cliente = cl.id_cliente
         `;
 
+        const resumen =
+            await pool.query(`
+                SELECT
+                    COALESCE(
+                        SUM(
+                            d.cantidad *
+                            d.precio_unitario
+                        ),
+                        0
+                    ) AS total,
 
-        // =========================
-        // RESUMEN
-        // =========================
+                    COUNT(
+                        DISTINCT ve.id_venta
+                    ) AS ventas,
 
-        const resumen = await pool.query(`
-            SELECT
+                    COALESCE(
+                        SUM(d.cantidad),
+                        0
+                    ) AS unidades
 
-                COALESCE(
+                ${desdeTablas}
+
+                ${where}
+            `, valores);
+
+        const ventasPorDia =
+            await pool.query(`
+                SELECT
+                    ve.fecha::date AS fecha,
+
                     SUM(
                         d.cantidad *
                         d.precio_unitario
-                    ),
-                    0
-                ) AS total,
+                    ) AS total
 
-                COUNT(
-                    DISTINCT ve.id_venta
-                ) AS ventas,
+                ${desdeTablas}
 
-                COALESCE(
-                    SUM(d.cantidad),
-                    0
-                ) AS unidades
+                ${where}
 
-            ${desdeTablas}
+                GROUP BY
+                    ve.fecha::date
 
-            ${where}
-        `, valores);
-
-
-        // =========================
-        // VENTAS POR DÍA
-        // =========================
-
-        const ventasPorDia = await pool.query(`
-            SELECT
-
-                ve.fecha::date AS fecha,
-
-                SUM(
-                    d.cantidad *
-                    d.precio_unitario
-                ) AS total
-
-            ${desdeTablas}
-
-            ${where}
-
-            GROUP BY
-                ve.fecha::date
-
-            ORDER BY
-                ve.fecha::date
-        `, valores);
-
-
-        // =========================
-        // PRODUCTOS MÁS VENDIDOS
-        // =========================
+                ORDER BY
+                    ve.fecha::date
+            `, valores);
 
         const productosMasVendidos =
             await pool.query(`
                 SELECT
-
                     p.nombre AS producto,
 
                     SUM(
@@ -2789,53 +2894,110 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
                 LIMIT 5
             `, valores);
 
+        const detalle =
+            await pool.query(`
+                SELECT
+                    ve.id_venta,
+                    ve.fecha,
 
-        // =========================
-        // DETALLE
-        // =========================
+                    COALESCE(
+                        cl.nombre,
+                        'Sin cliente'
+                    ) AS cliente,
 
-        const detalle = await pool.query(`
-            SELECT
+                    s.nombre AS sucursal,
+                    u.nombre AS vendedor,
+                    ve.canal,
+                    c.nombre AS categoria,
+                    p.nombre AS producto,
+                    va.color,
+                    va.talla,
+                    d.cantidad,
+                    d.precio_unitario,
 
-                ve.id_venta,
+                    (
+                        d.cantidad *
+                        d.precio_unitario
+                    ) AS subtotal
 
-                ve.fecha,
+                ${desdeTablas}
 
-                COALESCE(
-                    cl.nombre,
-                    'Sin cliente'
-                ) AS cliente,
+                ${where}
 
-                s.nombre AS sucursal,
+                ORDER BY
+                    ve.fecha DESC,
+                    ve.id_venta DESC
 
-                c.nombre AS categoria,
+                LIMIT 500
+            `, valores);
 
-                p.nombre AS producto,
+        const condicionesStock = [];
+        const valoresStock = [];
 
-                va.color,
+        if (id_sucursal) {
 
-                va.talla,
+            valoresStock.push(
+                Number(id_sucursal)
+            );
 
-                d.cantidad,
+            condicionesStock.push(
+                `i.id_sucursal = $${valoresStock.length}`
+            );
 
-                d.precio_unitario,
+        }
 
-                (
-                    d.cantidad *
-                    d.precio_unitario
-                ) AS subtotal
+        if (id_categoria) {
 
-            ${desdeTablas}
+            valoresStock.push(
+                Number(id_categoria)
+            );
 
-            ${where}
+            condicionesStock.push(
+                `p.id_categoria = $${valoresStock.length}`
+            );
 
-            ORDER BY
-                ve.fecha DESC,
-                ve.id_venta DESC
+        }
 
-            LIMIT 500
-        `, valores);
+        condicionesStock.push(
+            'i.stock_minimo IS NOT NULL'
+        );
 
+        condicionesStock.push(
+            'i.stock_actual <= i.stock_minimo'
+        );
+
+        const whereStock =
+            `WHERE ${condicionesStock.join(' AND ')}`;
+
+        const stockCritico =
+            await pool.query(`
+                SELECT
+                    p.nombre AS producto,
+                    va.color,
+                    va.talla,
+                    s.nombre AS sucursal,
+                    i.stock_actual,
+                    i.stock_minimo
+
+                FROM inventario i
+
+                JOIN variantes va
+                    ON i.id_variante = va.id_variante
+
+                JOIN productos p
+                    ON va.id_producto = p.id_producto
+
+                JOIN sucursales s
+                    ON i.id_sucursal = s.id_sucursal
+
+                ${whereStock}
+
+                ORDER BY
+                    i.stock_actual ASC,
+                    p.nombre,
+                    va.color,
+                    va.talla
+            `, valoresStock);
 
         const total =
             Number(
@@ -2852,12 +3014,10 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
                 resumen.rows[0].unidades
             );
 
-
         const ticketPromedio =
             cantidadVentas > 0
                 ? total / cantidadVentas
                 : 0;
-
 
         res.json({
 
@@ -2865,7 +3025,9 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
                 total,
                 cantidadVentas,
                 unidades,
-                ticketPromedio
+                ticketPromedio,
+                cantidadStockCritico:
+                    stockCritico.rows.length
             },
 
             ventasPorDia:
@@ -2875,10 +3037,12 @@ app.get('/api/reportes',requiereAutenticacion, async (req, res) => {
                 productosMasVendidos.rows,
 
             detalle:
-                detalle.rows
+                detalle.rows,
+
+            stockCritico:
+                stockCritico.rows
 
         });
-
 
     } catch (error) {
 
