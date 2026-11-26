@@ -90,6 +90,7 @@ La vendedora no debe poder:
 | Buscar producto | Coincidencias correctas |
 | Filtrar por categoría | Coincidencias correctas |
 | Ver variantes | Se muestran talla, color, SKU y stock por sucursal |
+| Editar variante como administrador | Se actualizan talla, color, SKU y stock por sucursal |
 | Crear producto como administrador | Producto agregado |
 | Agregar variante | Variante y stock por sucursal creados |
 | Desactivar producto | Producto queda inactivo |
@@ -120,6 +121,8 @@ La vendedora no debe poder:
 | Intentar mezclar sucursales en una venta | Operación rechazada |
 | Registrar venta Local | Venta guardada con canal Local |
 | Registrar venta Online | Venta guardada con canal Online |
+| Registrar venta Pagada | Estado guardado como Pagado |
+| Registrar venta Pendiente | Estado guardado como Pendiente |
 | Confirmar venta | El stock se descuenta automáticamente |
 
 ## 8. Historial de ventas
@@ -131,6 +134,7 @@ La vendedora no debe poder:
 | Filtrar por sucursal | Coincidencias correctas |
 | Filtrar por cliente | Coincidencias correctas |
 | Filtrar por canal | Coincidencias correctas |
+| Filtrar por estado de pago | Coincidencias Pagado/Pendiente correctas |
 | Abrir detalle | Productos, variantes, cantidades y total correctos |
 | Combinar varios filtros | El contador y total se recalculan |
 
