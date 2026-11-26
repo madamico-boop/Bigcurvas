@@ -67,109 +67,182 @@
         <h1>Reportes</h1>
 
         <p>
-            Consulta y análisis de ventas
+            Consulta y análisis de ventas e inventario crítico.
         </p>
 
 
-        <!-- FILTROS -->
+        <section class="reporte-filtros-card">
 
-        <section class="grafico-card">
+            <div class="reporte-filtros-header">
 
-            <h2>Filtros</h2>
+                <div>
+                    <h2>Filtros</h2>
+                    <p>Define el periodo y los criterios del reporte.</p>
+                </div>
+
+                <div class="reporte-filtros-rapidos">
+
+                    <button
+                        type="button"
+                        class="boton-secundario filtro-rapido-reporte"
+                        data-periodo="hoy"
+                    >
+                        Hoy
+                    </button>
+
+                    <button
+                        type="button"
+                        class="boton-secundario filtro-rapido-reporte"
+                        data-periodo="7dias"
+                    >
+                        Últimos 7 días
+                    </button>
+
+                    <button
+                        type="button"
+                        class="boton-secundario filtro-rapido-reporte"
+                        data-periodo="mes"
+                    >
+                        Este mes
+                    </button>
+
+                    <button
+                        type="button"
+                        class="boton-secundario filtro-rapido-reporte"
+                        data-periodo="todo"
+                    >
+                        Todo
+                    </button>
+
+                </div>
+
+            </div>
 
 
             <form
                 id="filtrosReporte"
-                class="venta-form"
+                class="reporte-filtros-grid"
             >
 
-                <label for="desde">
-                    Desde
-                </label>
+                <div>
+                    <label for="desde">
+                        Desde
+                    </label>
 
-                <input
-                    type="date"
-                    id="desde"
+                    <input
+                        type="date"
+                        id="desde"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="hasta">
+                        Hasta
+                    </label>
+
+                    <input
+                        type="date"
+                        id="hasta"
+                    >
+                </div>
+
+
+                <div>
+                    <label for="sucursalReporte">
+                        Sucursal
+                    </label>
+
+                    <select id="sucursalReporte">
+
+                        <option value="">
+                            Todas las sucursales
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="categoriaReporte">
+                        Categoría
+                    </label>
+
+                    <select id="categoriaReporte">
+
+                        <option value="">
+                            Todas las categorías
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div
+                    id="campoUsuarioReporte"
+                    hidden
                 >
+                    <label for="usuarioReporte">
+                        Registrado por
+                    </label>
+
+                    <select id="usuarioReporte">
+
+                        <option value="">
+                            Todos los usuarios
+                        </option>
+
+                    </select>
+                </div>
 
 
-                <label for="hasta">
-                    Hasta
-                </label>
+                <div class="reporte-filtros-acciones">
 
-                <input
-                    type="date"
-                    id="hasta"
-                >
+                    <button type="submit">
+                        Generar reporte
+                    </button>
 
+                    <button
+                        type="button"
+                        id="limpiarFiltros"
+                        class="boton-secundario"
+                    >
+                        Limpiar
+                    </button>
 
-                <label for="sucursalReporte">
-                    Sucursal
-                </label>
-
-                <select id="sucursalReporte">
-
-                    <option value="">
-                        Todas las sucursales
-                    </option>
-
-                </select>
-
-
-                <label for="categoriaReporte">
-                    Categoría
-                </label>
-
-                <select id="categoriaReporte">
-
-                    <option value="">
-                        Todas las categorías
-                    </option>
-
-                </select>
-
-
-                <button type="submit">
-                    Generar reporte
-                </button>
-
-
-                <button
-                    type="button"
-                    id="limpiarFiltros"
-                >
-                    Limpiar filtros
-                </button>
+                </div>
 
             </form>
 
 
-            <p id="mensajeReporte"></p>
+            <p
+                id="mensajeReporte"
+                class="mensaje-formulario"
+            ></p>
 
         </section>
 
+
         <div class="acciones-reporte">
 
-    <button
-        type="button"
-        id="exportarExcel"
-    >
-        Exportar Excel
-    </button>
+            <button
+                type="button"
+                id="exportarExcel"
+            >
+                Exportar Excel
+            </button>
 
-    <button
-        type="button"
-        id="exportarPdf"
-    >
-        Exportar PDF
-    </button>
+            <button
+                type="button"
+                id="exportarPdf"
+            >
+                Exportar PDF
+            </button>
 
-</div>
+        </div>
 
 
-        <!-- INDICADORES -->
-
-        <section class="dashboard-cards">
+        <section class="reporte-resumen-grid">
 
             <div class="dashboard-card">
 
@@ -222,10 +295,21 @@
 
             </div>
 
+
+            <div class="dashboard-card">
+
+                <h3>
+                    Stock crítico
+                </h3>
+
+                <p id="reporteStockCritico">
+                    0
+                </p>
+
+            </div>
+
         </section>
 
-
-        <!-- GRÁFICOS -->
 
         <section class="graficos-dashboard">
 
@@ -257,48 +341,95 @@
         </section>
 
 
-        <!-- DETALLE -->
+        <section class="grafico-card">
+
+            <div class="reporte-seccion-header">
+                <div>
+                    <h2>
+                        Detalle de ventas
+                    </h2>
+                    <p id="contadorDetalleReporte">
+                        0 registros
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="tabla-responsive">
+
+                <table class="inventory-table tabla-reporte">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Sucursal</th>
+                            <th>Registrado por</th>
+                            <th>Canal</th>
+                            <th>Categoría</th>
+                            <th>Producto</th>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="tablaReporte">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
 
         <section class="grafico-card">
 
-            <h2>
-                Detalle de ventas
-            </h2>
+            <div class="reporte-seccion-header">
+                <div>
+                    <h2>
+                        Stock crítico
+                    </h2>
+                    <p>
+                        Variantes cuyo stock actual alcanzó o bajó del mínimo configurado.
+                    </p>
+                </div>
+            </div>
 
 
-            <table class="inventory-table">
+            <div class="tabla-responsive">
 
-                <thead>
+                <table class="inventory-table tabla-reporte">
 
-                    <tr>
+                    <thead>
 
-                        <th>Fecha</th>
+                        <tr>
 
-                        <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>Sucursal</th>
+                            <th>Stock actual</th>
+                            <th>Stock mínimo</th>
 
-                        <th>Sucursal</th>
+                        </tr>
 
-                        <th>Categoría</th>
-
-                        <th>Producto</th>
-
-                        <th>Color</th>
-
-                        <th>Talla</th>
-
-                        <th>Cantidad</th>
-
-                        <th>Subtotal</th>
-
-                    </tr>
-
-                </thead>
+                    </thead>
 
 
-                <tbody id="tablaReporte">
-                </tbody>
+                    <tbody id="tablaStockCritico">
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
 
         </section>
 
@@ -306,23 +437,23 @@
 
 
     <script
-    src="https://cdn.jsdelivr.net/npm/chart.js"
-></script>
+        src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
 
-<script
-    src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
-></script>
+    <script
+        src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
+    ></script>
 
-<script
-    src="https://unpkg.com/jspdf@4.1.0/dist/jspdf.umd.min.js"
-></script>
+    <script
+        src="https://unpkg.com/jspdf@4.1.0/dist/jspdf.umd.min.js"
+    ></script>
 
-<script
-    src="https://unpkg.com/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js"
-></script>
+    <script
+        src="https://unpkg.com/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js"
+    ></script>
 
-<script src="js/reportes.js"></script>
-<script src="js/sesion.js"></script>
+    <script src="js/reportes.js"></script>
+    <script src="js/sesion.js"></script>
 
 
 </body>
