@@ -1520,7 +1520,7 @@ form {
 
 .filtros-historial {
     display: grid;
-    grid-template-columns: 1.5fr repeat(5, minmax(135px, 1fr)) auto;
+    grid-template-columns: 1.5fr repeat(6, minmax(135px, 1fr)) auto;
     gap: 14px;
     align-items: end;
     margin: 24px 0 16px;
@@ -1583,6 +1583,16 @@ form {
 .estado-pago-historial {
     background-color: #e7f4ec;
     color: #2f6b46;
+}
+
+.estado-pago-pagado {
+    background-color: #e7f4ec;
+    color: #2f6b46;
+}
+
+.estado-pago-pendiente {
+    background-color: #fff3d8;
+    color: #8a6418;
 }
 
 .detalle-venta-card {
