@@ -25,6 +25,9 @@ const filtroClienteHistorial =
 const filtroCanalHistorial =
     document.getElementById('filtroCanalHistorial');
 
+const filtroEstadoPagoHistorial =
+    document.getElementById('filtroEstadoPagoHistorial');
+
 const limpiarFiltrosHistorial =
     document.getElementById('limpiarFiltrosHistorial');
 
@@ -276,6 +279,9 @@ function aplicarFiltros() {
     const canal =
         filtroCanalHistorial.value;
 
+    const estadoPago =
+        filtroEstadoPagoHistorial.value;
+
     const filtradas =
         ventasCompletas.filter(
             venta => {
@@ -330,13 +336,19 @@ function aplicarFiltros() {
                     venta.canal ===
                         canal;
 
+                const coincideEstadoPago =
+                    !estadoPago ||
+                    venta.estado_pago ===
+                        estadoPago;
+
                 return (
                     coincideTexto &&
                     coincideDesde &&
                     coincideHasta &&
                     coincideSucursal &&
                     coincideCliente &&
-                    coincideCanal
+                    coincideCanal &&
+                    coincideEstadoPago
                 );
 
             }
@@ -415,6 +427,12 @@ function mostrarVentas(ventas) {
                     ? 'canal-online'
                     : 'canal-local';
 
+            const estadoClase =
+                estado ===
+                'Pendiente'
+                    ? 'estado-pago-pendiente'
+                    : 'estado-pago-pagado';
+
             fila.innerHTML =
                 '<td>' +
                     '<strong>#' +
@@ -450,7 +468,9 @@ function mostrarVentas(ventas) {
                     '</span>' +
                 '</td>' +
                 '<td>' +
-                    '<span class="estado-pago-historial">' +
+                    '<span class="estado-pago-historial ' +
+                        estadoClase +
+                    '">' +
                         escaparHtml(
                             estado
                         ) +
@@ -731,7 +751,8 @@ async function cargarDetalleVenta(
     filtroHasta,
     filtroSucursalHistorial,
     filtroClienteHistorial,
-    filtroCanalHistorial
+    filtroCanalHistorial,
+    filtroEstadoPagoHistorial
 ].forEach(control => {
 
     control.addEventListener(
@@ -765,6 +786,9 @@ limpiarFiltrosHistorial
                 '';
 
             filtroCanalHistorial.value =
+                '';
+
+            filtroEstadoPagoHistorial.value =
                 '';
 
             aplicarFiltros();
