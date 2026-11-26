@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Usuarios | Bigcurvas</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+
+        <h2>Bigcurvas</h2>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="ventas.html">Registrar venta</a>
+            <a href="historial.html">Historial de ventas</a>
+            <a href="productos.html">Productos</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="reportes.html">Reportes</a>
+            <a href="usuarios.html" id="enlaceUsuarios">Usuarios</a>
+        </nav>
+
+    </aside>
+
+
+    <main class="dashboard">
+
+        <h1>Usuarios</h1>
+        <p>Administración de cuentas y permisos del sistema.</p>
+
+
+        <section class="usuario-form-card">
+
+            <div class="usuario-form-header">
+                <div>
+                    <h2>Crear usuario</h2>
+                    <p>Las nuevas cuentas pueden ser administradoras o vendedoras.</p>
+                </div>
+            </div>
+
+            <form id="usuarioForm">
+
+                <div class="usuario-form-grid">
+
+                    <div>
+                        <label for="nombreUsuario">
+                            Nombre *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nombreUsuario"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="correoUsuario">
+                            Correo *
+                        </label>
+
+                        <input
+                            type="email"
+                            id="correoUsuario"
+                            maxlength="150"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="rolUsuario">
+                            Rol *
+                        </label>
+
+                        <select
+                            id="rolUsuario"
+                            required
+                        >
+                            <option value="vendedora">
+                                Vendedora
+                            </option>
+
+                            <option value="administrador">
+                                Administrador
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="passwordUsuario">
+                            Contraseña *
+                        </label>
+
+                        <input
+                            type="password"
+                            id="passwordUsuario"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="usuario-form-acciones">
+                    <button type="submit">
+                        Crear usuario
+                    </button>
+                </div>
+
+            </form>
+
+            <p
+                id="mensajeUsuario"
+                class="mensaje-formulario"
+            ></p>
+
+        </section>
+
+
+        <section
+            id="editarUsuarioSection"
+            class="usuario-form-card"
+            hidden
+        >
+
+            <div class="usuario-form-header">
+                <div>
+                    <h2>Editar usuario</h2>
+                    <p>Modifica los datos y el rol de la cuenta seleccionada.</p>
+                </div>
+            </div>
+
+            <form id="editarUsuarioForm">
+
+                <div class="usuario-form-grid">
+
+                    <div>
+                        <label for="editarNombreUsuario">
+                            Nombre *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editarNombreUsuario"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="editarCorreoUsuario">
+                            Correo *
+                        </label>
+
+                        <input
+                            type="email"
+                            id="editarCorreoUsuario"
+                            maxlength="150"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="editarRolUsuario">
+                            Rol *
+                        </label>
+
+                        <select
+                            id="editarRolUsuario"
+                            required
+                        >
+                            <option value="vendedora">
+                                Vendedora
+                            </option>
+
+                            <option value="administrador">
+                                Administrador
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="usuario-form-acciones">
+
+                    <button type="submit">
+                        Guardar cambios
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelarEdicionUsuario"
+                        class="boton-secundario"
+                    >
+                        Cancelar
+                    </button>
+
+                </div>
+
+            </form>
+
+            <p
+                id="mensajeEdicionUsuario"
+                class="mensaje-formulario"
+            ></p>
+
+        </section>
+
+
+        <section
+            id="passwordUsuarioSection"
+            class="usuario-form-card"
+            hidden
+        >
+
+            <div class="usuario-form-header">
+                <div>
+                    <h2>Cambiar contraseña</h2>
+                    <p id="passwordUsuarioTitulo">
+                        Define una nueva contraseña para el usuario.
+                    </p>
+                </div>
+            </div>
+
+            <form id="passwordUsuarioForm">
+
+                <div class="usuario-password-grid">
+
+                    <div>
+                        <label for="nuevaPasswordUsuario">
+                            Nueva contraseña *
+                        </label>
+
+                        <input
+                            type="password"
+                            id="nuevaPasswordUsuario"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="confirmarPasswordUsuario">
+                            Confirmar contraseña *
+                        </label>
+
+                        <input
+                            type="password"
+                            id="confirmarPasswordUsuario"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="usuario-form-acciones">
+
+                    <button type="submit">
+                        Cambiar contraseña
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelarPasswordUsuario"
+                        class="boton-secundario"
+                    >
+                        Cancelar
+                    </button>
+
+                </div>
+
+            </form>
+
+            <p
+                id="mensajePasswordUsuario"
+                class="mensaje-formulario"
+            ></p>
+
+        </section>
+
+
+        <section class="filtros-usuarios">
+
+            <div class="campo-filtro campo-filtro-busqueda">
+
+                <label for="buscarUsuario">
+                    Buscar usuario
+                </label>
+
+                <input
+                    type="search"
+                    id="buscarUsuario"
+                    placeholder="Nombre o correo"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <div class="campo-filtro">
+
+                <label for="filtroRolUsuario">
+                    Rol
+                </label>
+
+                <select id="filtroRolUsuario">
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="administrador">
+                        Administrador
+                    </option>
+
+                    <option value="vendedora">
+                        Vendedora
+                    </option>
+                </select>
+
+            </div>
+
+            <div class="campo-filtro">
+
+                <label for="filtroEstadoUsuario">
+                    Estado
+                </label>
+
+                <select id="filtroEstadoUsuario">
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="activo">
+                        Activos
+                    </option>
+
+                    <option value="inactivo">
+                        Inactivos
+                    </option>
+                </select>
+
+            </div>
+
+            <button
+                type="button"
+                id="limpiarFiltrosUsuarios"
+                class="boton-secundario"
+            >
+                Limpiar filtros
+            </button>
+
+        </section>
+
+
+        <div class="encabezado-listado-usuarios">
+
+            <div>
+                <h2>Usuarios registrados</h2>
+                <p id="contadorUsuarios">
+                    0 usuarios
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="tabla-responsive">
+
+            <table class="inventory-table tabla-usuarios">
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaUsuarios">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <script src="js/usuarios.js"></script>
+    <script src="js/sesion.js"></script>
+
+</body>
+</html>
